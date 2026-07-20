@@ -1,18 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { products, users } from "@/lib/db";
+import { getAllApprovedProducts } from "@/lib/data";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function SellerStorefront() {
   const params = useParams<{ username: string }>();
-  const seller = users.find(u => u.username === params.username);
-  const sellerProducts = products.filter(p => p.seller?.username === params.username && p.status === "approved");
+  const [sellerProducts, setSellerProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const username = params.username;
 
-  if (!seller) {
-    return <div className="max-w-4xl mx-auto p-12 text-center">Seller not found</div>;
+  // Simple static seller profile for demo (matches seed)
+  const seller = {
+    username,
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    bio: "Building premium developer tools and digital products.",
+    github: username,
+    verified: true,
+  };
+
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      try {
+        const all = await getAllApprovedProducts();
+        const mine = all.filter((p: any) => 
+          p.seller?.username?.toLowerCase() === username.toLowerCase() ||
+          p.seller_id === username
+        );
+        setSellerProducts(mine);
+      } catch {
+        setSellerProducts([]);
+      }
+      setIsLoading(false);
+    }
+    load();
+  }, [username]);
+
+  if (isLoading) {
+    return <div className="max-w-6xl mx-auto px-6 py-12">Loading seller storefront...</div>;
   }
 
   return (

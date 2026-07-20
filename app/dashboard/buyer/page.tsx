@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { getUserOrders, orders } from "@/lib/db";
+import { getUserOrders, createReview } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { Download, Key, Clock, ExternalLink } from "lucide-react";
+import { Download, Clock, Star } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -12,18 +12,29 @@ import Link from "next/link";
 export default function MyPurchases() {
   const { data: session } = useSession();
   const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
+  const [buyerOrders, setBuyerOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reviewingOrderId, setReviewingOrderId] = useState<string | null>(null);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
 
   // In a real app we'd use session.user.id
   // For demo we use the buyer from the Telegram flow + fallback to u4
   const currentBuyerId = (session?.user as any)?.id || "demo-buyer";
 
-  // Get completed orders (real data from payment flow)
-  let buyerOrders = getUserOrders(currentBuyerId);
-
-  // Fallback: also include any completed orders from the old mock for demo
-  if (buyerOrders.length === 0) {
-    buyerOrders = orders.filter(o => o.status === "completed");
-  }
+  useEffect(() => {
+    async function loadOrders() {
+      setIsLoading(true);
+      try {
+        const orders = await getUserOrders(currentBuyerId);
+        setBuyerOrders(orders || []);
+      } catch (e) {
+        setBuyerOrders([]);
+      }
+      setIsLoading(false);
+    }
+    loadOrders();
+  }, [currentBuyerId]);
 
   const getDownloadCount = (orderId: string) => {
     return downloadCounts[orderId] || 0;
@@ -65,6 +76,32 @@ export default function MyPurchases() {
   const isExpired = (order: any) => {
     if (!order.download_expires) return false;
     return new Date(order.download_expires) < new Date();
+  };
+
+  const openReview = (order: any) => {
+    setReviewingOrderId(order.id);
+    setReviewText("");
+    setReviewRating(5);
+  };
+
+  const submitReview = async (order: any) => {
+    if (!reviewText.trim()) {
+      toast.error("Please write a review");
+      return;
+    }
+    try {
+      await createReview({
+        productId: order.productId || order.product_id || order.product?.id,
+        buyerId: currentBuyerId,
+        rating: reviewRating,
+        comment: reviewText.trim(),
+      });
+      toast.success("Review submitted. Thank you!");
+      setReviewingOrderId(null);
+      setReviewText("");
+    } catch (e) {
+      toast.error("Could not submit review");
+    }
   };
 
   return (

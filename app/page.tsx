@@ -1,15 +1,35 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Star, Users, Shield, Zap } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
-import { products, categories } from "@/lib/db";
+import { getAllApprovedProducts } from "@/lib/data";
+import { categories } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { Product } from "@/lib/types";
 
 export default function LandingPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const data = await getAllApprovedProducts();
+      setProducts(data);
+      setIsLoading(false);
+    }
+    load();
+  }, []);
+
   const featured = products.slice(0, 6);
-  const trending = [...products].sort((a, b) => b.sales_count - a.sales_count).slice(0, 4);
+  const trending = [...products].sort((a, b) => (b.sales_count || 0) - (a.sales_count || 0)).slice(0, 4);
   const topSellers = products.slice(0, 3);
+
+  if (isLoading) {
+    return <div className="max-w-7xl mx-auto px-6 py-24 text-center">Loading featured products...</div>;
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-6">

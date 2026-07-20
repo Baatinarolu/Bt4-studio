@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validatePurchaseToken, createPendingOrder, completeOrder, getProductBySlug } from "@/lib/db";
+import { validatePurchaseToken, createPendingOrder, completeOrder, getProductBySlug } from "@/lib/data";
 
 // Production-grade Telegram bot webhook for BT4 Studio
 // Webhook URL: https://yourdomain.com/api/telegram-bot
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
         const orderId = data.replace("pay_", "");
 
         // Simulate real payment processing
-        const order = completeOrder(orderId);
+        const order: any = await completeOrder(orderId);
 
         if (order) {
           const downloadLink = `https://bt4-studio.vercel.app/download/${order.download_token}`;
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
       if (payload.startsWith("purchase_")) {
         const token = payload.replace("purchase_", "");
-        const validation = validatePurchaseToken(token);
+        const validation: any = await validatePurchaseToken(token);
 
         if (!validation.valid || !validation.product) {
           return sendTelegramMessage(chatId, "❌ This purchase link has expired. Please return to BT4 Studio and try again.");
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
         const price = validation.price || product.price;
 
         // Create a pending order linked to this token (for demo we use token as orderId)
-        const order = createPendingOrder(product.id, `tg_${from.id}`, price);
+        const order: any = await createPendingOrder(product.id, `tg_${from.id}`, price);
 
         const keyboard = {
           inline_keyboard: [

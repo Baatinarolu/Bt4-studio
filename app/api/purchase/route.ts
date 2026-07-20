@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProductBySlug, createPurchaseToken, createPendingOrder } from "@/lib/db";
+import { getProductBySlug, createPurchaseToken, createPendingOrder } from "@/lib/data";
 
 export async function POST(req: NextRequest) {
   try {
     const { productSlug, price, buyerId = "demo-buyer" } = await req.json();
 
-    const product = getProductBySlug(productSlug);
+    const product = await getProductBySlug(productSlug);
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const finalPrice = price || product.price;
-    const token = createPurchaseToken(product.id, finalPrice);
+    const finalPrice = price || (product as any).price;
+    const token = await createPurchaseToken((product as any).id, finalPrice);
 
     // Create a pending order right away (linked to the token for demo)
-    const order = createPendingOrder(product.id, buyerId, finalPrice);
+    const order = await createPendingOrder((product as any).id, buyerId, finalPrice);
 
     const telegramUrl = `https://t.me/BT4StudioBot?start=purchase_${token}`;
 

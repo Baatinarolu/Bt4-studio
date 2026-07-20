@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { completeOrder, orders } from "@/lib/db";
+import { completeOrder } from "@/lib/data";
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "orderId required" }, { status: 400 });
     }
 
-    const order = completeOrder(orderId);
+    const order = await completeOrder(orderId);
 
     if (!order) {
       return NextResponse.json({ error: "Order not found or already completed" }, { status: 404 });
@@ -18,10 +18,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       order: {
-        id: order.id,
-        license_key: order.license_key,
-        download_url: `/download/${order.download_token}`,
-        expires: order.download_expires,
+        id: (order as any).id,
+        license_key: (order as any).license_key,
+        download_url: `/download/${(order as any).download_token}`,
+        expires: (order as any).download_expires,
       },
     });
   } catch (error) {

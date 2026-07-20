@@ -1,26 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { products, users, orders } from "@/lib/db";
+import { useState, useEffect } from "react";
+import { getPendingProducts, approveProduct, rejectProduct, getAllApprovedProducts } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export default function AdminPanel() {
-  const [pendingProducts, setPendingProducts] = useState(
-    products.filter(p => p.status === "pending" || p.status === "draft")
-  );
-  const [allProducts] = useState(products);
+  const [pendingProducts, setPendingProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleApprove = (id: string) => {
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const pending = await getPendingProducts();
+      const approved = await getAllApprovedProducts();
+      setPendingProducts(pending || []);
+      setAllProducts(approved || []);
+      
+      // For demo users (static for now, could add getAllUsers later)
+      setUsers([
+        { id: 'u1', username: 'sarahcodes', role: 'seller', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face' },
+        { id: 'u2', username: 'alexbuilds', role: 'seller', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face' },
+        { id: 'u4', username: 'janebuyer', role: 'buyer', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face' },
+        { id: 'u5', username: 'admin', role: 'admin', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face' },
+      ]);
+      
+      setOrders([]); // Orders loaded elsewhere, demo revenue from approved sales
+      setIsLoading(false);
+    }
+    load();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    await approveProduct(id);
+    setPendingProducts(prev => prev.filter(p => p.id !== id));
+    const updated = await getAllApprovedProducts();
+    setAllProducts(updated || []);
     toast.success("Product approved and published");
-    // In real app: update DB and refresh
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = async (id: string) => {
+    await rejectProduct(id);
+    setPendingProducts(prev => prev.filter(p => p.id !== id));
     toast.error("Product rejected");
   };
 
-  const totalRevenue = orders.reduce((sum, o) => sum + o.amount, 0);
+  const totalRevenue = allProducts.reduce((sum, p: any) => sum + (p.sales_count || p.salesCount || 0) * (p.price || 0), 0);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -44,7 +72,7 @@ export default function AdminPanel() {
           </div>
           <div className="border p-5 rounded-2xl">
             <div className="text-xs text-muted-foreground">Approved Products</div>
-            <div className="text-4xl font-semibold tracking-tight">{allProducts.filter(p => p.status === "approved").length}</div>
+            <div className="text-4xl font-semibold tracking-tight">{allProducts.filter(p => (p.status || "").toLowerCase() === "approved").length}</div>
           </div>
           <div className="border p-5 rounded-2xl">
             <div className="text-xs text-muted-foreground">Orders</div>

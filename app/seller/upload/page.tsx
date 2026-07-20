@@ -191,7 +191,8 @@ export default function UploadWizard() {
     setIsSubmitting(true);
 
     try {
-      const sellerId = user?.id || "u1"; // fallback for demo
+      // Use real seller ID from session when available
+      const sellerId = user?.id || "u1"; // fallback for demo accounts
 
       await createProduct({
         sellerId,
