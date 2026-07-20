@@ -95,14 +95,15 @@ export default function AdminPanel() {
       </div>
 
       {/* Quick nav to full sections */}
+      {/* Full Admin Subpages Navigation */}
       <div className="flex flex-wrap gap-2 mb-6 text-sm">
-        <Link href="/admin/products" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Products</Link>
-        <Link href="/admin/orders" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Orders</Link>
-        <Link href="/admin/users" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Users</Link>
-        <Link href="/admin/payouts" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Payouts</Link>
-        <Link href="/admin/disputes" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Disputes</Link>
-        <Link href="/admin/broadcast" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Broadcast</Link>
-        <Link href="/admin/settings" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Settings</Link>
+        <Link href="/admin/products" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">🛠️ Products</Link>
+        <Link href="/admin/orders" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">📦 Orders</Link>
+        <Link href="/admin/users" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">👥 Users</Link>
+        <Link href="/admin/payouts" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">💰 Payouts</Link>
+        <Link href="/admin/disputes" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">⚠️ Disputes</Link>
+        <Link href="/admin/broadcast" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">📢 Broadcast</Link>
+        <Link href="/admin/settings" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">⚙️ Settings</Link>
       </div>
 
       {/* Tabs */}
