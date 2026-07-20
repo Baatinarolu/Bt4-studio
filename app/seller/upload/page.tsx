@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createProduct } from "@/lib/data";
+import { uploadFile, uploadPreviewImages } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -53,6 +54,7 @@ export default function UploadWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [uploadProgress, setUploadProgress] = useState("");
 
   const [form, setForm] = useState<FormData>({
     title: "",
@@ -186,13 +188,30 @@ export default function UploadWizard() {
     }
   };
 
-  // Submit - now persists via unified data layer
+  // Submit - now persists via unified data layer + real file storage
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setUploadProgress("Preparing upload...");
 
     try {
-      // Use real seller ID from session when available
-      const sellerId = user?.id || "u1"; // fallback for demo accounts
+      const sellerId = user?.id || "u1";
+
+      let fileUrl = "";
+      let previewImageUrls: string[] = [];
+
+      // === Real file uploads ===
+      if (form.file) {
+        setUploadProgress("Uploading source code (ZIP)...");
+        const zipResult = await uploadFile(form.file, "zip");
+        fileUrl = zipResult.url;
+      }
+
+      if (form.previewImages.length > 0) {
+        setUploadProgress(`Uploading ${form.previewImages.length} preview image(s)...`);
+        previewImageUrls = await uploadPreviewImages(form.previewImages);
+      }
+
+      setUploadProgress("Saving product...");
 
       await createProduct({
         sellerId,
@@ -203,8 +222,8 @@ export default function UploadWizard() {
         tags: form.tags,
         price: form.price,
         currency: "USD",
-        fileUrl: "https://r2.bt4.studio/uploads/" + (form.file?.name || "product.zip"), // placeholder
-        previewImages: [], // In real app we'd upload images first
+        fileUrl: fileUrl || "https://r2.bt4.studio/uploads/" + (form.file?.name || "product.zip"),
+        previewImages: previewImageUrls,
         demoUrl: form.demoUrl || null,
         licenseType: form.license as any,
         version: "1.0.0",
@@ -219,10 +238,11 @@ export default function UploadWizard() {
         router.push("/seller/dashboard?submitted=true");
       }, 1200);
     } catch (error) {
-      toast.error("Failed to submit product");
       console.error(error);
+      toast.error("Failed to submit product. Please try again.");
     } finally {
       setIsSubmitting(false);
+      setUploadProgress("");
     }
   };
 
@@ -601,7 +621,10 @@ export default function UploadWizard() {
                   className="btn-primary px-8 gap-2"
                 >
                   {isSubmitting ? (
-                    <>Submitting <Loader2 className="h-4 w-4 animate-spin" /></>
+                    <>
+                      {uploadProgress || "Uploading..."} 
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </>
                   ) : (
                     <>Submit for Review <Check className="h-4 w-4" /></>
                   )}
