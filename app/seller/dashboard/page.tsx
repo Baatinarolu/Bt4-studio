@@ -1,18 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { products, orders } from "@/lib/db";
-import { Product } from "@/lib/types";
 import { Plus, TrendingUp, DollarSign, Users, Download } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import Link from "next/link";
 
 export default function SellerDashboard() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"products" | "analytics" | "payouts">("products");
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  // Mock seller products
+  const user = session?.user as any;
+  const isSellerSetupComplete = true; // In real app: check user.stripeConnectId && user.github
+
   const sellerProducts = products.filter(p => p.seller_id === "u1");
   const sellerOrders = orders.filter(o => sellerProducts.some(p => p.id === o.product_id));
 
@@ -20,12 +24,24 @@ export default function SellerDashboard() {
   const totalSales = sellerOrders.length;
   const avgRating = sellerProducts.reduce((sum, p) => sum + p.rating_avg, 0) / sellerProducts.length || 0;
 
+  if (!isSellerSetupComplete) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-20 text-center">
+        <h1 className="text-3xl font-semibold mb-4">Finish your seller setup</h1>
+        <p className="text-muted-foreground mb-8">You need to connect GitHub and Stripe before publishing products.</p>
+        <Link href="/seller/setup">
+          <Button size="lg" className="btn-primary px-8">Complete Seller Setup →</Button>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-9">
         <div>
           <h1 className="text-4xl tracking-tighter font-semibold">Seller Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, sarahcodes • 4.9 ★</p>
+          <p className="text-muted-foreground">Welcome back, {user?.name || "seller"} • 4.9 ★</p>
         </div>
         <Button onClick={() => setShowUploadModal(true)} className="btn-primary gap-2">
           <Plus className="h-4 w-4" /> Upload new product

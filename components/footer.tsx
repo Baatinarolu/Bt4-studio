@@ -8,9 +8,9 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 font-semibold text-foreground mb-3">
               <div className="w-6 h-6 bg-foreground rounded flex items-center justify-center">
-                <span className="text-background text-xs font-bold">CV</span>
+                <span className="text-background text-xs font-bold">BT4</span>
               </div>
-              BT4 Studio Studio
+              BT4 Studio
             </div>
             <div className="text-xs">Premium digital goods for developers.</div>
           </div>
