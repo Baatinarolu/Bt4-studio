@@ -580,3 +580,83 @@ export async function getOrCreateUserFromSession(sessionUser: any) {
     return sessionUser;
   }
 }
+
+// ============================================
+// ADMIN EXTENSIONS (required by new admin routes)
+// ============================================
+export async function getAllUsers() {
+  if (!isRealPrisma()) {
+    return (mock as any).users || [];
+  }
+  try {
+    return await prisma!.user.findMany({ orderBy: { createdAt: 'desc' } });
+  } catch {
+    return (mock as any).users || [];
+  }
+}
+
+export async function getAllOrders() {
+  if (!isRealPrisma()) {
+    return (mock as any).orders || [];
+  }
+  try {
+    return await prisma!.order.findMany({
+      include: { product: true, buyer: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch {
+    return (mock as any).orders || [];
+  }
+}
+
+export async function refundOrder(orderId: string) {
+  if (!isRealPrisma()) {
+    const orders = (mock as any).orders || [];
+    const o = orders.find((x: any) => x.id === orderId);
+    if (o) o.status = 'REFUNDED';
+    return true;
+  }
+  try {
+    await prisma!.order.update({
+      where: { id: orderId },
+      data: { status: 'REFUNDED' },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function createDispute(orderId: string, reason: string) {
+  if (!isRealPrisma()) {
+    console.log(`[MOCK] Dispute created for order ${orderId}: ${reason}`);
+    return { id: 'disp_' + Date.now(), orderId, reason, status: 'OPEN' };
+  }
+  return { id: 'disp_' + Date.now(), orderId, reason, status: 'OPEN' };
+}
+
+export async function updateOrderPayment(orderId: string, proof?: string, adminId?: string) {
+  if (!isRealPrisma()) {
+    const orders = (mock as any).orders || [];
+    const o = orders.find((x: any) => x.id === orderId);
+    if (o) {
+      if (proof) o.paymentProof = proof;
+      o.status = 'PAYMENT_RECEIVED';
+      if (adminId) o.paymentConfirmedBy = adminId;
+    }
+    return true;
+  }
+  try {
+    await prisma!.order.update({
+      where: { id: orderId },
+      data: {
+        ...(proof && { paymentProof: proof }),
+        status: 'PAYMENT_RECEIVED',
+        ...(adminId && { paymentConfirmedBy: adminId }),
+      },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
