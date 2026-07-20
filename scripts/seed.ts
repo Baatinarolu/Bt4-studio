@@ -6,7 +6,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding CodeVault Studio database...');
+  console.log('🌱 Seeding BT4 Studio Studio database...');
 
   await prisma.review.deleteMany();
   await prisma.order.deleteMany();

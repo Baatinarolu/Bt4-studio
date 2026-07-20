@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const token = createPurchaseToken(product.id, price || product.price);
 
     // Simulate Telegram deep link
-    const telegramUrl = `https://t.me/CodeVaultBot?start=purchase_${token}`;
+    const telegramUrl = `https://t.me/BT4 StudioBot?start=purchase_${token}`;
 
     return NextResponse.json({
       success: true,

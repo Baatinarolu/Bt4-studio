@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Search, User, ShoppingBag, Menu, X, Sun, Moon } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, X, Sun, Moon, LogIn } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
 
@@ -26,7 +26,7 @@ export function Navbar() {
             <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center">
               <span className="text-background font-semibold text-xl tracking-tighter">CV</span>
             </div>
-            <span className="font-semibold text-xl tracking-[-0.02em]">CodeVault</span>
+            <span className="font-semibold text-xl tracking-[-0.02em]">BT4 Studio</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-7 text-sm font-medium">
@@ -78,6 +78,12 @@ export function Navbar() {
             <Link href="/seller/dashboard">
               <Button size="sm" className="btn-primary px-4 text-sm">
                 Sell
+              </Button>
+            </Link>
+            <Link href="/api/auth/signin">
+              <Button variant="outline" size="sm" className="gap-1.5 hidden md:flex">
+                <LogIn className="h-4 w-4" />
+                Sign in
               </Button>
             </Link>
           </div>

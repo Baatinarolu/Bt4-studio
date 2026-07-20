@@ -1,10 +1,10 @@
-# CodeVault Studio
+# BT4 Studio Studio
 
 **Premium digital marketplace for source code, SaaS templates, UI kits, APIs & developer tools.**
 
 Clean, editorial Swiss-style design — production ready and fully Vercel deployable.
 
-![CodeVault Studio](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200)
+![BT4 Studio Studio](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200)
 
 ## Features
 
@@ -29,7 +29,7 @@ Clean, editorial Swiss-style design — production ready and fully Vercel deploy
 
 ```bash
 git clone <your-repo>
-cd codevault-studio
+cd bt4-studio
 npm install
 npm run dev
 ```

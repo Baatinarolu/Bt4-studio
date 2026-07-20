@@ -122,7 +122,7 @@ export default function LandingPage() {
       <div className="bg-muted/60 rounded-3xl p-12 mb-20">
         <div className="max-w-3xl mx-auto text-center">
           <div className="uppercase tracking-widest text-xs font-medium mb-3 text-muted-foreground">SIMPLE. FAST. SECURE.</div>
-          <h2 className="text-3xl font-semibold tracking-tighter mb-8">How CodeVault works</h2>
+          <h2 className="text-3xl font-semibold tracking-tighter mb-8">How BT4 Studio works</h2>
           
           <div className="grid md:grid-cols-3 gap-8 text-left">
             {[
@@ -164,7 +164,7 @@ export default function LandingPage() {
       <div className="border-t py-16 text-center">
         <div className="max-w-lg mx-auto">
           <h3 className="font-semibold text-3xl tracking-tight">Ready to ship your next product faster?</h3>
-          <p className="mt-2 mb-8 text-muted-foreground">Join 4,200+ developers who sell their work on CodeVault.</p>
+          <p className="mt-2 mb-8 text-muted-foreground">Join 4,200+ developers who sell their work on BT4 Studio.</p>
           <Link href="/seller/dashboard">
             <Button size="lg" className="btn-primary px-10">Become a seller</Button>
           </Link>

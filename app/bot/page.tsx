@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 export default function TelegramBot() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-14">
-      <h1 className="text-5xl tracking-tighter font-semibold mb-2">CodeVault Telegram Bot</h1>
-      <p className="text-xl text-muted-foreground mb-8">@CodeVaultBot</p>
+      <h1 className="text-5xl tracking-tighter font-semibold mb-2">BT4 Studio Telegram Bot</h1>
+      <p className="text-xl text-muted-foreground mb-8">@BT4 StudioBot</p>
 
       <div className="prose dark:prose-invert">
         <h2>How it works</h2>
@@ -24,7 +24,7 @@ export default function TelegramBot() {
         </ul>
 
         <h3>Inline Product Sharing</h3>
-        <p>In any chat, type <code>@CodeVaultBot search term</code> to instantly share products.</p>
+        <p>In any chat, type <code>@BT4 StudioBot search term</code> to instantly share products.</p>
 
         <h3>Setup Instructions (for production)</h3>
         <ol>
@@ -36,8 +36,8 @@ export default function TelegramBot() {
       </div>
 
       <div className="mt-10">
-        <Link href="https://t.me/CodeVaultBot" target="_blank">
-          <Button size="lg" className="btn-primary">Open @CodeVaultBot</Button>
+        <Link href="https://t.me/BT4 StudioBot" target="_blank">
+          <Button size="lg" className="btn-primary">Open @BT4 StudioBot</Button>
         </Link>
         <Link href="/marketplace" className="ml-4 text-sm">or go back to marketplace</Link>
       </div>

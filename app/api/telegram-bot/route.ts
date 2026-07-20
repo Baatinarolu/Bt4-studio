@@ -3,7 +3,7 @@ import { validatePurchaseToken, completePurchase } from "@/lib/db";
 
 // Telegram Bot webhook handler (production-ready stub for Vercel)
 // In real deployment: Set webhook to https://yourdomain.com/api/telegram-bot
-// Bot username: @CodeVaultBot
+// Bot username: @BT4StudioBot
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
                   }
                 ],
                 [
-                  { text: "Ask seller", url: `https://t.me/CodeVaultBot?start=chat_${validation.product.seller_id}` },
-                  { text: "Back to marketplace", url: `https://codevault-studio.vercel.app/product/${validation.product.slug}` }
+                  { text: "Ask seller", url: `https://t.me/BT4StudioBot?start=chat_${validation.product.seller_id}` },
+                  { text: "Back to marketplace", url: `https://bt4-studio.vercel.app/product/${validation.product.slug}` }
                 ]
               ]
             }
@@ -85,11 +85,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         method: "sendMessage",
         chat_id: chatId,
-        text: `Welcome to *CodeVault Studio*!\n\nBrowse premium code, SaaS templates, and developer tools.\n\nUse /purchases to see your orders.\nUse /sales if you're a seller.`,
+        text: `Welcome to *BT4 Studio Studio*!\n\nBrowse premium code, SaaS templates, and developer tools.\n\nUse /purchases to see your orders.\nUse /sales if you're a seller.`,
         parse_mode: "Markdown",
         reply_markup: {
           inline_keyboard: [[
-            { text: "🌐 Open Marketplace", url: "https://codevault-studio.vercel.app/marketplace" }
+            { text: "🌐 Open Marketplace", url: "https://bt4-studio.vercel.app/marketplace" }
           ]]
         }
       });
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
         text: `Search results for "${text}"\n\nTry the full marketplace on the web for advanced filters.`,
         reply_markup: {
           inline_keyboard: [[
-            { text: "🔍 Open Marketplace", url: `https://codevault-studio.vercel.app/marketplace?search=${encodeURIComponent(text)}` }
+            { text: "🔍 Open Marketplace", url: `https://bt4-studio.vercel.app/marketplace?search=${encodeURIComponent(text)}` }
           ]]
         }
       });

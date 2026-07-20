@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "CodeVault Studio — Marketplace for Source Code & Digital Goods",
+  title: "BT4 Studio Studio — Marketplace for Source Code & Digital Goods",
   description: "Premium marketplace for developers. Buy and sell high-quality source code, SaaS templates, UI kits, APIs, and digital tech assets. Clean, modern, production-ready.",
   icons: {
     icon: "/favicon.ico",

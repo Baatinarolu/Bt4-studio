@@ -34,7 +34,7 @@ export default function ProductDetail() {
     // In production: POST to /api/purchase to create token + redirect
     await new Promise(resolve => setTimeout(resolve, 650));
     
-    const telegramUrl = `https://t.me/CodeVaultBot?start=purchase_${token}`;
+    const telegramUrl = `https://t.me/BT4 StudioBot?start=purchase_${token}`;
     
     // Store purchase intent locally (in real app would be server-side)
     localStorage.setItem("pendingPurchase", JSON.stringify({

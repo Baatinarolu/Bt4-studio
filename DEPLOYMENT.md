@@ -1,8 +1,8 @@
-# CodeVault Studio — Deployment & Hand-off Guide
+# BT4 Studio Studio — Deployment & Hand-off Guide
 
 ## Quick Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FBaatinarolu%2FBt4-studio&project-name=codevault-studio&repository-name=codevault-studio)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FBaatinarolu%2FBt4-studio&project-name=bt4-studio&repository-name=bt4-studio)
 
 1. Click the button above (or import the repo manually)
 2. Add the environment variables from `.env.example`
@@ -33,7 +33,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Telegram Bot (Critical for checkout)
 TELEGRAM_BOT_TOKEN=123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-TELEGRAM_BOT_USERNAME=CodeVaultBot
+TELEGRAM_BOT_USERNAME=BT4 StudioBot
 
 # Email (optional)
 RESEND_API_KEY=re_...
@@ -52,8 +52,8 @@ R2_PUBLIC_URL=https://...
 
 1. Open Telegram → search `@BotFather`
 2. Send `/newbot`
-3. Choose name: `CodeVault Studio`
-4. Choose username: `CodeVaultBot` (or your own)
+3. Choose name: `BT4 Studio Studio`
+4. Choose username: `BT4 StudioBot` (or your own)
 5. Copy the token → add to `TELEGRAM_BOT_TOKEN`
 
 ### Set Webhook (after first deploy)

@@ -10,7 +10,7 @@ export function Footer() {
               <div className="w-6 h-6 bg-foreground rounded flex items-center justify-center">
                 <span className="text-background text-xs font-bold">CV</span>
               </div>
-              CodeVault Studio
+              BT4 Studio Studio
             </div>
             <div className="text-xs">Premium digital goods for developers.</div>
           </div>
@@ -44,7 +44,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t text-[10px] flex flex-col md:flex-row md:items-center justify-between gap-2">
-          <div>© {new Date().getFullYear()} CodeVault Studio. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} BT4 Studio Studio. All rights reserved.</div>
           <div>20% platform fee • 80% to creators • Built with Next.js</div>
         </div>
       </div>

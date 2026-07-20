@@ -1,5 +1,4 @@
-// CodeVault Studio - Prisma Schema
-// Production-ready schema matching the original spec + current implementation
+// BT4 Studio - Production Prisma Schema (matches refined spec)
 
 generator client {
   provider = "prisma-client-js"
@@ -14,167 +13,130 @@ model User {
   id                String    @id @default(cuid())
   email             String    @unique
   username          String    @unique
-  avatar            String
+  displayName       String?
+  avatar            String?
   bio               String?
-  role              String    @default("buyer") // buyer | seller | admin
-  stripeConnectId   String?   @map("stripe_connect_id")
-  telegramId        String?   @map("telegram_id")
-  github            String?
-  verified          Boolean   @default(false)
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  role              UserRole  @default(BUYER)
+  telegramId        String?   @unique
+  stripeConnectId   String?   @unique
+  isVerified        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
 
-  // Relations
   products          Product[] @relation("SellerProducts")
-  orders            Order[]   @relation("BuyerOrders")
+  ordersAsBuyer     Order[]   @relation("BuyerOrders")
+  ordersAsSeller    Order[]   @relation("SellerOrders")
   reviews           Review[]
   payouts           Payout[]
-  sentMessages      Message[] @relation("SenderMessages")
-
-  @@map("users")
-}
-
-model Category {
-  id          String    @id @default(cuid())
-  name        String
-  slug        String    @unique
-  icon        String
-  description String?
-  parentId    String?   @map("parent_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  products    Product[]
-
-  @@map("categories")
+  conversations     Conversation[]
 }
 
 model Product {
-  id           String   @id @default(cuid())
-  sellerId     String   @map("seller_id")
-  title        String
-  slug         String   @unique
-  description  String
-  categoryId   String   @map("category_id")
-  price        Float
-  currency     String   @default("USD")
-  fileUrl      String   @map("file_url")
-  previewUrl   String?  @map("preview_url")
-  tags         String[]
-  status       String   @default("pending") // draft | pending | approved | rejected
-  salesCount   Int      @default(0) @map("sales_count")
-  ratingAvg    Float    @default(0) @map("rating_avg")
-  reviewCount  Int      @default(0) @map("review_count")
-  license      String   @default("MIT")
-  version      String   @default("1.0.0")
-  fileSize     String   @map("file_size")
-  demoUrl      String?  @map("demo_url")
-  previewImages String[] @map("preview_images") @default([])
-  readme       String?
-  fileTree     Json?    @map("file_tree")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id            String        @id @default(cuid())
+  sellerId      String
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  category      Category
+  tags          String[]
+  price         Decimal       @db.Decimal(10, 2)
+  currency      String        @default("USD")
+  fileUrl       String
+  previewImages String[]
+  demoUrl       String?
+  licenseType   LicenseType   @default(MIT)
+  status        ProductStatus @default(PENDING)
+  salesCount    Int           @default(0)
+  ratingAvg     Float         @default(0)
+  ratingCount   Int           @default(0)
+  version       String        @default("1.0.0")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  seller     User      @relation("SellerProducts", fields: [sellerId], references: [id])
-  category   Category  @relation(fields: [categoryId], references: [id])
-  orders     Order[]
-  reviews    Review[]
-  licenses   License[]
-
-  @@map("products")
+  seller        User          @relation("SellerProducts", fields: [sellerId], references: [id])
+  orders        Order[]
+  reviews       Review[]
+  licenses      License[]
 }
 
 model Order {
-  id                     String   @id @default(cuid())
-  buyerId                String   @map("buyer_id")
-  productId              String   @map("product_id")
-  amount                 Float
-  currency               String   @default("USD")
-  status                 String   @default("pending") // pending | completed | refunded
-  telegramPaymentMsgId   String?  @map("telegram_payment_msg_id")
-  stripeSessionId        String?  @map("stripe_session_id")
-  licenseKey             String?  @map("license_key")
-  downloadCount          Int      @default(0) @map("download_count")
-  createdAt              DateTime @default(now()) @map("created_at")
+  id              String      @id @default(cuid())
+  buyerId         String
+  productId       String
+  amount          Decimal     @db.Decimal(10, 2)
+  platformFee     Decimal     @db.Decimal(10, 2)
+  sellerEarnings  Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  telegramMsgId   String?
+  stripePaymentId String?
+  downloadToken   String      @unique
+  downloadExpires DateTime
+  createdAt       DateTime    @default(now())
 
-  buyer    User    @relation("BuyerOrders", fields: [buyerId], references: [id])
-  product  Product @relation(fields: [productId], references: [id])
-
-  @@map("orders")
-}
-
-model Review {
-  id        String   @id @default(cuid())
-  productId String   @map("product_id")
-  buyerId   String   @map("buyer_id")
-  rating    Int
-  comment   String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  product Product @relation(fields: [productId], references: [id])
-  buyer   User    @relation(fields: [buyerId], references: [id])
-
-  @@map("reviews")
+  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  product         Product     @relation(fields: [productId], references: [id])
+  license         License?
 }
 
 model License {
   id          String    @id @default(cuid())
-  productId   String    @map("product_id")
-  buyerId     String    @map("buyer_id")
-  licenseKey  String    @unique @map("license_key")
-  usageLimit  Int       @default(5)
-  expiresAt   DateTime? @map("expires_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  orderId     String    @unique
+  productId   String
+  buyerId     String
+  key         String    @unique
+  usageLimit  Int?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
 
-  product Product @relation(fields: [productId], references: [id])
-
-  @@map("licenses")
+  order       Order     @relation(fields: [orderId], references: [id])
 }
 
-model Conversation {
-  id         String   @id @default(cuid())
-  buyerId    String   @map("buyer_id")
-  sellerId   String   @map("seller_id")
-  productId  String   @map("product_id")
-  createdAt  DateTime @default(now()) @map("created_at")
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  buyerId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
 
-  messages   Message[]
-
-  @@map("conversations")
-}
-
-model Message {
-  id              String   @id @default(cuid())
-  conversationId  String   @map("conversation_id")
-  senderId        String   @map("sender_id")
-  content         String
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  sender       User         @relation("SenderMessages", fields: [senderId], references: [id])
-
-  @@map("messages")
+  product   Product  @relation(fields: [productId], references: [id])
+  buyer     User     @relation(fields: [buyerId], references: [id])
 }
 
 model Payout {
+  id            String        @id @default(cuid())
+  sellerId      String
+  amount        Decimal       @db.Decimal(10, 2)
+  status        PayoutStatus  @default(PENDING)
+  stripePayoutId String?
+  createdAt     DateTime      @default(now())
+
+  seller        User          @relation(fields: [sellerId], references: [id])
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  buyerId   String
+  sellerId  String
+  productId String?
+  createdAt DateTime  @default(now())
+
+  buyer     User      @relation(fields: [buyerId], references: [id])
+  messages  Message[]
+}
+
+model Message {
   id             String   @id @default(cuid())
-  sellerId       String   @map("seller_id")
-  amount         Float
-  status         String   @default("pending") // pending | completed
-  stripePayoutId String?  @map("stripe_payout_id")
-  createdAt      DateTime @default(now()) @map("created_at")
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime @default(now())
 
-  seller User @relation(fields: [sellerId], references: [id])
-
-  @@map("payouts")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
 }
 
-model PurchaseToken {
-  id        String   @id @default(cuid())
-  productId String   @map("product_id")
-  price     Float
-  expiresAt DateTime @map("expires_at")
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@map("purchase_tokens")
-}
+enum UserRole { BUYER SELLER ADMIN }
+enum Category { NEXTJS UI_KITS APIS SAAS_STARTERS REACT PYTHON MOBILE DEVOPS OTHER }
+enum LicenseType { MIT GPL COMMERCIAL CUSTOM }
+enum ProductStatus { PENDING APPROVED REJECTED }
+enum OrderStatus { PENDING COMPLETED FAILED REFUNDED }
+enum PayoutStatus { PENDING PROCESSING COMPLETED FAILED }
