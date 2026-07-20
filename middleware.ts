@@ -6,22 +6,39 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const { pathname } = request.nextUrl;
 
-  // Protect seller routes
+  const userRole = (token as any)?.role || "BUYER";
+
+  // Admin routes — return 404 for non-admins
+  if (pathname.startsWith("/admin")) {
+    if (!token || userRole !== "ADMIN") {
+      return NextResponse.rewrite(new URL("/404", request.url));
+    }
+  }
+
+  // Seller routes
   if (pathname.startsWith("/seller") || pathname.startsWith("/dashboard/seller")) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/auth/signin", request.url));
+    }
+    if (userRole !== "SELLER" && userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL("/onboard", request.url));
+    }
+  }
+
+  // Buyer dashboard
+  if (pathname.startsWith("/dashboard") && !pathname.startsWith("/dashboard/seller")) {
     if (!token) {
       return NextResponse.redirect(new URL("/auth/signin", request.url));
     }
   }
 
-  // Simple onboard redirect for authenticated users who haven't chosen role
-  // In production use DB flag
-  if (token && pathname === "/") {
-    // For demo: don't force on every visit
+  if (pathname === "/onboard" && !token) {
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/seller/:path*", "/dashboard/:path*", "/onboard"],
+  matcher: ["/admin/:path*", "/seller/:path*", "/dashboard/:path*", "/onboard"],
 };
