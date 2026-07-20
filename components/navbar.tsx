@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Search, User, ShoppingBag, Menu, X, Sun, Moon, LogIn } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, X, Sun, Moon, LogIn, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
+import { useSession, signOut } from "next-auth/react";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { theme, setTheme } = useTheme();
+  const { data: session, status } = useSession();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +20,15 @@ export function Navbar() {
     }
   };
 
+  const user = session?.user;
+
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-10">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-foreground rounded flex items-center justify-center">
-              <span className="text-background font-semibold text-xl tracking-tighter">CV</span>
+              <span className="text-background font-semibold text-xl tracking-tighter">BT4</span>
             </div>
             <span className="font-semibold text-xl tracking-[-0.02em]">BT4 Studio</span>
           </Link>
@@ -69,23 +73,45 @@ export function Navbar() {
           </Button>
 
           <div className="flex items-center gap-1.5 border-l pl-3 ml-1 border-border">
-            <Link href="/dashboard/buyer">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Account</span>
-              </Button>
-            </Link>
-            <Link href="/seller/dashboard">
-              <Button size="sm" className="btn-primary px-4 text-sm">
-                Sell
-              </Button>
-            </Link>
-            <Link href="/api/auth/signin">
-              <Button variant="outline" size="sm" className="gap-1.5 hidden md:flex">
-                <LogIn className="h-4 w-4" />
-                Sign in
-              </Button>
-            </Link>
+            {status === "loading" ? (
+              <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+            ) : user ? (
+              <>
+                <Link href="/dashboard/buyer">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{user.name || "Account"}</span>
+                  </Button>
+                </Link>
+                <Link href="/seller/dashboard">
+                  <Button size="sm" className="btn-primary px-4 text-sm">
+                    Sell
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => signOut()}
+                  className="hidden md:flex"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/signin">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn className="h-4 w-4" />
+                    <span className="hidden sm:inline">Sign in</span>
+                  </Button>
+                </Link>
+                <Link href="/seller/dashboard">
+                  <Button size="sm" className="btn-primary px-4 text-sm">
+                    Sell
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -105,8 +131,15 @@ export function Navbar() {
           <Link href="/categories" className="block py-1.5">Categories</Link>
           <Link href="/for-sellers" className="block py-1.5">For Sellers</Link>
           <div className="pt-3 border-t">
-            <Link href="/dashboard/buyer" className="block py-1.5">My Account</Link>
-            <Link href="/seller/dashboard" className="block py-1.5">Seller Dashboard</Link>
+            {user ? (
+              <>
+                <Link href="/dashboard/buyer" className="block py-1.5">My Account</Link>
+                <Link href="/seller/dashboard" className="block py-1.5">Seller Dashboard</Link>
+                <button onClick={() => signOut()} className="block py-1.5 text-left w-full">Sign out</button>
+              </>
+            ) : (
+              <Link href="/auth/signin" className="block py-1.5">Sign in</Link>
+            )}
           </div>
           <form onSubmit={handleSearch} className="pt-2">
             <input
