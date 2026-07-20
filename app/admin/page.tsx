@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { 
   getPendingProducts, approveProduct, rejectProduct, getAllApprovedProducts,
   getAllUsers, getAllOrders, refundOrder, createDispute 
 } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import Link from "next/link";
 
 export default function AdminPanel() {
   const [pendingProducts, setPendingProducts] = useState<any[]>([]);
@@ -94,12 +94,13 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4 text-sm">
-        <Link href="/admin/products" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Products</Link>
-        <Link href="/admin/orders" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Orders</Link>
-        <Link href="/admin/users" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Users</Link>
-        <Link href="/admin/payouts" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Payouts</Link>
-        <Link href="/admin/disputes" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Disputes</Link>
+      {/* Quick nav to full sections */}
+      <div className="flex flex-wrap gap-2 mb-6 text-sm">
+        <Link href="/admin/products" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Products</Link>
+        <Link href="/admin/orders" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Orders</Link>
+        <Link href="/admin/users" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Users</Link>
+        <Link href="/admin/payouts" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Payouts</Link>
+        <Link href="/admin/disputes" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Disputes</Link>
       </div>
 
       {/* Tabs */}
@@ -136,7 +137,7 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Moderation Queue */}
+        {/* Moderation */}
         {activeTab === 'moderation' && (
           <div className="md:col-span-12">
             <h3 className="font-semibold mb-3 text-lg tracking-tight">Moderation Queue</h3>
@@ -176,10 +177,10 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Orders + Refund/Dispute */}
+        {/* Orders */}
         {activeTab === 'orders' && (
           <div className="md:col-span-12">
-            <h3 className="font-semibold mb-3 text-lg tracking-tight">All Orders (Full)</h3>
+            <h3 className="font-semibold mb-3 text-lg tracking-tight">All Orders (Full List)</h3>
             <div className="border border-border rounded-2xl overflow-hidden">
               {orders.length > 0 ? orders.map((o: any) => (
                 <div key={o.id} className="flex items-center justify-between p-4 border-b last:border-b-0 text-sm">
@@ -194,7 +195,7 @@ export default function AdminPanel() {
                     <Button size="sm" variant="ghost" onClick={() => handleDispute(o.id)}>Dispute</Button>
                   </div>
                 </div>
-              )) : <div className="p-6 text-muted-foreground">No orders yet. (Full list loads via data layer)</div>}
+              )) : <div className="p-6 text-muted-foreground">No orders yet.</div>}
             </div>
           </div>
         )}
@@ -208,7 +209,6 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Platform Settings */}
         <div className="md:col-span-12 border rounded-2xl p-6 mt-2">
           <h4 className="font-medium mb-3">Platform settings</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
