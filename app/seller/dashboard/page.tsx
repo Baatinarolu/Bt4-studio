@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { products, orders } from "@/lib/db";
 import { Plus, TrendingUp, DollarSign, Users, Download } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -12,10 +11,9 @@ import Link from "next/link";
 export default function SellerDashboard() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<"products" | "analytics" | "payouts">("products");
-  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const user = session?.user as any;
-  const isSellerSetupComplete = true; // In real app: check user.stripeConnectId && user.github
+  const isSellerSetupComplete = true;
 
   const sellerProducts = products.filter(p => p.seller_id === "u1");
   const sellerOrders = orders.filter(o => sellerProducts.some(p => p.id === o.product_id));
@@ -43,9 +41,11 @@ export default function SellerDashboard() {
           <h1 className="text-4xl tracking-tighter font-semibold">Seller Dashboard</h1>
           <p className="text-muted-foreground">Welcome back, {user?.name || "seller"} • 4.9 ★</p>
         </div>
-        <Button onClick={() => setShowUploadModal(true)} className="btn-primary gap-2">
-          <Plus className="h-4 w-4" /> Upload new product
-        </Button>
+        <Link href="/seller/upload">
+          <Button className="btn-primary gap-2">
+            <Plus className="h-4 w-4" /> Upload new product
+          </Button>
+        </Link>
       </div>
 
       <div className="flex gap-3 mb-8 border-b">
@@ -88,7 +88,9 @@ export default function SellerDashboard() {
         <div>
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Your products ({sellerProducts.length})</h3>
-            <Button size="sm" variant="outline" onClick={() => setShowUploadModal(true)}>New product</Button>
+            <Link href="/seller/upload">
+              <Button size="sm" variant="outline">New product</Button>
+            </Link>
           </div>
           
           <div className="border rounded-2xl overflow-hidden">
@@ -179,57 +181,6 @@ export default function SellerDashboard() {
                 <tr><td className="pl-4 py-3">Jan 6</td><td className="font-mono">$742.00</td><td><span className="text-emerald-600">Paid</span></td></tr>
               </tbody>
             </table>
-          </div>
-        </div>
-      )}
-
-      {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-6" onClick={() => setShowUploadModal(false)}>
-          <div className="bg-card border border-border rounded-3xl max-w-lg w-full p-8" onClick={e => e.stopPropagation()}>
-            <h3 className="font-semibold text-2xl tracking-tighter mb-6">Upload new product</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Product title</label>
-                <Input placeholder="My beautiful dashboard template" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Price (USD)</label>
-                <Input type="number" defaultValue="79" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Short description</label>
-                <textarea className="w-full border border-border rounded-md p-3 text-sm" rows={3} placeholder="A beautiful, production-ready dashboard built with Next.js..." />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium">Category</label>
-                  <select className="w-full h-10 border border-border rounded-md px-3 text-sm">
-                    <option>Next.js</option><option>React</option><option>UI Kits</option><option>SaaS Starters</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">License</label>
-                  <select className="w-full h-10 border border-border rounded-md px-3 text-sm">
-                    <option>MIT</option><option>Commercial</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Upload ZIP (max 500MB)</label>
-                <div className="border border-dashed rounded-xl p-8 text-center text-sm text-muted-foreground">Drag & drop or click to upload</div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-8">
-              <Button variant="outline" className="flex-1" onClick={() => setShowUploadModal(false)}>Cancel</Button>
-              <Button className="btn-primary flex-1" onClick={() => {
-                setShowUploadModal(false);
-                alert("Upload complete! Your product is now in review (admin approval required).");
-              }}>Submit for review</Button>
-            </div>
-            <div className="text-center text-[10px] mt-3 text-muted-foreground">Products require admin review before publishing</div>
           </div>
         </div>
       )}
