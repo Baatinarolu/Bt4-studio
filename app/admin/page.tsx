@@ -7,6 +7,7 @@ import {
 } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Link from "next/link";
 
 export default function AdminPanel() {
   const [pendingProducts, setPendingProducts] = useState<any[]>([]);
