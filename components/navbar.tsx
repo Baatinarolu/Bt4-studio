@@ -105,6 +105,11 @@ export function Navbar() {
                     Sell
                   </Button>
                 </Link>
+                {(user as any)?.role === "ADMIN" && (
+                  <Link href="/admin">
+                    <Button variant="ghost" size="sm" className="text-xs hidden md:inline-flex">Admin</Button>
+                  </Link>
+                )}
                 <Button 
                   variant="ghost" 
                   size="sm" 
