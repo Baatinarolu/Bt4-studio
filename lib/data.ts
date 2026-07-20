@@ -18,7 +18,15 @@ import type { Product, Order, Review } from './types';
 // ============================================
 
 function isRealPrisma(): boolean {
-  return !!prisma;
+  const real = !!prisma;
+  if (real && process.env.NODE_ENV !== 'production') {
+    // One-time log so developers see the real backend is active
+    if (!(global as any).__bt4_logged_real_db) {
+      console.log('[BT4] Using REAL PostgreSQL backend (DATABASE_URL detected)');
+      (global as any).__bt4_logged_real_db = true;
+    }
+  }
+  return real;
 }
 
 // ============================================

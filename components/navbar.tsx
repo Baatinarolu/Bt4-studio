@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, User, ShoppingBag, Menu, X, Sun, Moon, LogIn, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
@@ -21,6 +21,16 @@ export function Navbar() {
   };
 
   const user = session?.user;
+
+  // Real backend status indicator (client-only)
+  const [backendStatus, setBackendStatus] = useState<{ mode: string; isReal: boolean } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/backend-status')
+      .then(r => r.json())
+      .then(data => setBackendStatus({ mode: data.mode, isReal: data.isReal }))
+      .catch(() => {});
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -71,6 +81,13 @@ export function Navbar() {
             <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
+
+          {/* Real backend mode indicator (truthful) */}
+          {backendStatus && (
+            <div className="hidden md:flex items-center px-2 py-0.5 text-[10px] font-mono rounded border border-border bg-muted/50 mr-1">
+              {backendStatus.isReal ? '🟢 REAL' : '⚪ MOCK'}
+            </div>
+          )}
 
           <div className="flex items-center gap-1.5 border-l pl-3 ml-1 border-border">
             {status === "loading" ? (
