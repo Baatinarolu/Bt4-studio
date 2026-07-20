@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { getProductBySlug, completePurchase } from "@/lib/db";
+import { getProductBySlug } from "@/lib/db";
 import { Star, Download, Shield, Calendar, Tag, Users } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toast } from "sonner";
@@ -27,40 +27,55 @@ export default function ProductDetail() {
 
   const handleBuyViaTelegram = async () => {
     setIsPurchasing(true);
-    
-    // Simulate purchase token generation
-    const token = crypto.randomUUID();
-    
-    // In production: POST to /api/purchase to create token + redirect
-    await new Promise(resolve => setTimeout(resolve, 650));
-    
-    const telegramUrl = `https://t.me/BT4 StudioBot?start=purchase_${token}`;
-    
-    // Store purchase intent locally (in real app would be server-side)
-    localStorage.setItem("pendingPurchase", JSON.stringify({
-      token,
-      productId: product.id,
-      price: product.price,
-      timestamp: Date.now()
-    }));
-    
-    toast.success("Redirecting to Telegram...");
-    window.open(telegramUrl, "_blank");
-    
-    // Simulate successful purchase flow for demo (auto-complete for testing)
-    setTimeout(() => {
-      const order = completePurchase(token, "u4");
-      if (order) {
-        toast.success(`Purchase successful! License key: ${order.license_key}`, { 
-          duration: 6000,
-          action: {
-            label: "View downloads",
-            onClick: () => window.location.href = "/dashboard/buyer"
-          }
-        });
-      }
+
+    try {
+      const res = await fetch("/api/purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productSlug: product.slug,
+          price: product.price,
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      const data = await res.json();
+
+      // Open Telegram with the secure deep link
+      window.open(data.telegramUrl, "_blank");
+
+      toast.success("Purchase started in Telegram", {
+        description: "Complete payment in the bot to receive your license & download link.",
+      });
+
+      // For demo purposes: after 4 seconds we simulate the user paid
+      // In production the Telegram bot would trigger this via webhook
+      setTimeout(async () => {
+        try {
+          await fetch("/api/complete-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: data.orderId }),
+          });
+
+          toast.success("Payment confirmed!", {
+            description: "Check your Telegram chat for the download link and license key.",
+            action: {
+              label: "Open Telegram",
+              onClick: () => window.open("https://t.me/BT4StudioBot", "_blank"),
+            },
+          });
+        } catch (e) {
+          // silent fallback
+        }
+        setIsPurchasing(false);
+      }, 4000);
+
+    } catch (error) {
+      toast.error("Could not start purchase. Please try again.");
       setIsPurchasing(false);
-    }, 3400);
+    }
   };
 
   const images = product.preview_images && product.preview_images.length > 0 

@@ -1,27 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPurchaseToken, getProductBySlug } from "@/lib/db";
+import { getProductBySlug, createPurchaseToken, createPendingOrder } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    const { productSlug, price } = await req.json();
+    const { productSlug, price, buyerId = "demo-buyer" } = await req.json();
 
     const product = getProductBySlug(productSlug);
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    const token = createPurchaseToken(product.id, price || product.price);
+    const finalPrice = price || product.price;
+    const token = createPurchaseToken(product.id, finalPrice);
 
-    // Simulate Telegram deep link
-    const telegramUrl = `https://t.me/BT4 StudioBot?start=purchase_${token}`;
+    // Create a pending order right away (linked to the token for demo)
+    const order = createPendingOrder(product.id, buyerId, finalPrice);
+
+    const telegramUrl = `https://t.me/BT4StudioBot?start=purchase_${token}`;
 
     return NextResponse.json({
       success: true,
       token,
+      orderId: order.id,
       telegramUrl,
+      product: {
+        id: product.id,
+        title: product.title,
+        price: finalPrice,
+      },
       expiresIn: "30 minutes",
     });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to create purchase token" }, { status: 500 });
+    console.error("Purchase error:", error);
+    return NextResponse.json({ error: "Failed to create purchase" }, { status: 500 });
   }
 }

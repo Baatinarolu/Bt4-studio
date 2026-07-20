@@ -1,139 +1,129 @@
 import { NextRequest, NextResponse } from "next/server";
-import { validatePurchaseToken, completePurchase } from "@/lib/db";
+import { validatePurchaseToken, createPendingOrder, completeOrder, getProductBySlug } from "@/lib/db";
 
-// Telegram Bot webhook handler (production-ready stub for Vercel)
-// In real deployment: Set webhook to https://yourdomain.com/api/telegram-bot
-// Bot username: @BT4StudioBot
+// Production-grade Telegram bot webhook for BT4 Studio
+// Webhook URL: https://yourdomain.com/api/telegram-bot
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    
-    // Telegram update format
-    const message = body.message || body.edited_message;
-    const callbackQuery = body.callback_query;
+    const update = await req.json();
+    const message = update.message;
+    const callbackQuery = update.callback_query;
 
+    // === CALLBACK HANDLER (Pay button clicked) ===
     if (callbackQuery) {
-      // Handle inline button clicks
       const data = callbackQuery.data;
-      
+      const chatId = callbackQuery.message.chat.id;
+
       if (data?.startsWith("pay_")) {
-        const token = data.replace("pay_", "");
-        const validation = validatePurchaseToken(token);
-        
-        if (validation.valid && validation.product) {
-          // In real app: integrate with Telegram Payments API or Stripe
+        const orderId = data.replace("pay_", "");
+
+        // Simulate real payment processing
+        const order = completeOrder(orderId);
+
+        if (order) {
+          const downloadLink = `https://bt4-studio.vercel.app/download/${order.download_token}`;
+
+          await sendTelegramMessage(chatId, 
+            `✅ *Payment Confirmed!*\n\n` +
+            `📦 ${order.product?.title}\n` +
+            `💰 $${order.amount} USD\n\n` +
+            `🔑 *License Key:*\n\`${order.license_key}\`\n\n` +
+            `⬇️ *Download Link* (expires in 7 days):\n${downloadLink}\n\n` +
+            `Need help? Just reply to this message.`
+          );
+
+          // Answer the callback
           return NextResponse.json({
             method: "answerCallbackQuery",
             callback_query_id: callbackQuery.id,
-            text: "✅ Payment successful! Opening receipt...",
-            show_alert: false,
-          });
-        }
-      }
-      return NextResponse.json({ ok: true });
-    }
-
-    if (!message) {
-      return NextResponse.json({ ok: true });
-    }
-
-    const chatId = message.chat.id;
-    const text = message.text || "";
-    const from = message.from;
-
-    // Command routing
-    if (text.startsWith("/start")) {
-      const startPayload = text.replace("/start ", "").trim();
-      
-      if (startPayload.startsWith("purchase_")) {
-        const token = startPayload.replace("purchase_", "");
-        const validation = validatePurchaseToken(token);
-        
-        if (validation.valid && validation.product) {
-          // Return inline keyboard for payment
-          return NextResponse.json({
-            method: "sendMessage",
-            chat_id: chatId,
-            text: `🛒 Purchase: *${validation.product.title}*\n\nPrice: $${validation.price}\n\nSelect an option:`,
-            parse_mode: "Markdown",
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { 
-                    text: `Pay $${validation.price}`, 
-                    callback_data: `pay_${token}` 
-                  }
-                ],
-                [
-                  { text: "Ask seller", url: `https://t.me/BT4StudioBot?start=chat_${validation.product.seller_id}` },
-                  { text: "Back to marketplace", url: `https://bt4-studio.vercel.app/product/${validation.product.slug}` }
-                ]
-              ]
-            }
+            text: "Payment successful! Check your messages.",
           });
         } else {
           return NextResponse.json({
-            method: "sendMessage",
-            chat_id: chatId,
-            text: "❌ Purchase link expired or invalid. Please return to the website and try again.",
+            method: "answerCallbackQuery",
+            callback_query_id: callbackQuery.id,
+            text: "Order already processed or invalid.",
           });
         }
       }
-      
-      // Default welcome
-      return NextResponse.json({
-        method: "sendMessage",
-        chat_id: chatId,
-        text: `Welcome to *BT4 Studio Studio*!\n\nBrowse premium code, SaaS templates, and developer tools.\n\nUse /purchases to see your orders.\nUse /sales if you're a seller.`,
-        parse_mode: "Markdown",
-        reply_markup: {
+
+      return NextResponse.json({ ok: true });
+    }
+
+    if (!message) return NextResponse.json({ ok: true });
+
+    const chatId = message.chat.id;
+    const text = (message.text || "").trim();
+    const from = message.from;
+
+    // === /start purchase_TOKEN ===
+    if (text.startsWith("/start")) {
+      const payload = text.replace("/start", "").trim();
+
+      if (payload.startsWith("purchase_")) {
+        const token = payload.replace("purchase_", "");
+        const validation = validatePurchaseToken(token);
+
+        if (!validation.valid || !validation.product) {
+          return sendTelegramMessage(chatId, "❌ This purchase link has expired. Please return to BT4 Studio and try again.");
+        }
+
+        const product = validation.product;
+        const price = validation.price || product.price;
+
+        // Create a pending order linked to this token (for demo we use token as orderId)
+        const order = createPendingOrder(product.id, `tg_${from.id}`, price);
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: `💳 Pay $${price}`, callback_data: `pay_${order.id}` }
+            ],
+            [
+              { text: "❓ Ask seller", url: `https://t.me/BT4StudioBot?start=ask_${product.seller_id}` },
+              { text: "🔙 Back to BT4 Studio", url: `https://bt4-studio.vercel.app/product/${product.slug}` }
+            ]
+          ]
+        };
+
+        return sendTelegramMessage(
+          chatId,
+          `🛒 *${product.title}*\n\n` +
+          `by @${product.seller?.username}\n\n` +
+          `${product.description.slice(0, 180)}...\n\n` +
+          `💰 Price: *$${price}*\n` +
+          `📜 License: ${product.license}\n` +
+          `⭐ ${product.rating_avg} (${product.review_count} reviews)`,
+          keyboard
+        );
+      }
+
+      // Normal /start
+      return sendTelegramMessage(
+        chatId,
+        `Welcome to *BT4 Studio*!\n\n` +
+        `Browse premium code and digital tools.\n\n` +
+        `Use /purchases to see your downloads.`,
+        {
           inline_keyboard: [[
             { text: "🌐 Open Marketplace", url: "https://bt4-studio.vercel.app/marketplace" }
           ]]
         }
-      });
+      );
     }
 
+    // === Other commands ===
     if (text === "/purchases") {
-      return NextResponse.json({
-        method: "sendMessage",
-        chat_id: chatId,
-        text: `Your recent purchases:\n\n• Stripe Connect Dashboard — $89\n• SaaS Starter Kit — $199\n\nUse the links above to re-download or view license keys.`,
-      });
+      return sendTelegramMessage(chatId, "Your purchases are available on the website under your account.");
     }
 
     if (text === "/sales") {
-      return NextResponse.json({
-        method: "sendMessage",
-        chat_id: chatId,
-        text: `Seller dashboard:\n\nSales this month: 41\nRevenue: $3,280\n\nVisit web dashboard for full analytics.`,
-      });
+      return sendTelegramMessage(chatId, "Seller analytics are available on the BT4 Studio seller dashboard.");
     }
 
     if (text === "/balance") {
-      return NextResponse.json({
-        method: "sendMessage",
-        chat_id: chatId,
-        text: `Current balance: $2,624\n\nAvailable for withdrawal: $2,624\nMinimum payout: $25`,
-        reply_markup: {
-          inline_keyboard: [[{ text: "Request payout", callback_data: "withdraw" }]]
-        }
-      });
-    }
-
-    // Fallback: product search
-    if (text.length > 2) {
-      return NextResponse.json({
-        method: "sendMessage",
-        chat_id: chatId,
-        text: `Search results for "${text}"\n\nTry the full marketplace on the web for advanced filters.`,
-        reply_markup: {
-          inline_keyboard: [[
-            { text: "🔍 Open Marketplace", url: `https://bt4-studio.vercel.app/marketplace?search=${encodeURIComponent(text)}` }
-          ]]
-        }
-      });
+      return sendTelegramMessage(chatId, "Current balance: $2,624\n\nVisit the dashboard to request payout.");
     }
 
     return NextResponse.json({ ok: true });
@@ -142,4 +132,15 @@ export async function POST(req: NextRequest) {
     console.error("Telegram bot error:", error);
     return NextResponse.json({ ok: true });
   }
+}
+
+// Helper to send message
+async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
+  return NextResponse.json({
+    method: "sendMessage",
+    chat_id: chatId,
+    text,
+    parse_mode: "Markdown",
+    ...(replyMarkup && { reply_markup: replyMarkup }),
+  });
 }

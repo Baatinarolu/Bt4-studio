@@ -67,8 +67,10 @@ export interface Order {
   status: 'pending' | 'completed' | 'refunded';
   created_at: string;
   telegram_payment_msg_id?: string;
-  license_key?: string;
+  license_key?: string | null;
   download_count: number;
+  download_token?: string;
+  download_expires?: string;
 }
 
 export interface Review {
