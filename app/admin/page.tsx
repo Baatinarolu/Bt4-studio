@@ -101,6 +101,8 @@ export default function AdminPanel() {
         <Link href="/admin/users" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Users</Link>
         <Link href="/admin/payouts" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Payouts</Link>
         <Link href="/admin/disputes" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Disputes</Link>
+        <Link href="/admin/broadcast" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Broadcast</Link>
+        <Link href="/admin/settings" className="px-4 py-1.5 bg-muted rounded hover:bg-muted/70">Settings</Link>
       </div>
 
       {/* Tabs */}
