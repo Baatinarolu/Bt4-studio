@@ -1,19 +1,32 @@
-// lib/prisma.ts
-// Completely build-safe Prisma client.
-// Never throws during `next build`.
-// Falls back to null when Prisma can't be initialized.
+/**
+ * BT4 Studio - Safe Prisma Client
+ *
+ * CRITICAL: This file must never cause a build failure.
+ * 
+ * Strategy:
+ * - Only attempt to load Prisma when DATABASE_URL is present
+ * - Use require() + try/catch
+ * - Use `any` for global to avoid index signature errors
+ * - Return null on any failure path
+ */
 
 let prismaClient: any = null;
 
 if (typeof window === 'undefined' && process.env.DATABASE_URL) {
   try {
-    // Dynamic require so it doesn't break static type checking / build
-    // when @prisma/client hasn't been generated yet.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { PrismaClient } = require('@prisma/client');
-    prismaClient = new PrismaClient();
-  } catch (e) {
-    // Prisma client not available (common during build or preview)
+
+    const globalAny = global as any;
+
+    if (!globalAny.__bt4_prisma) {
+      globalAny.__bt4_prisma = new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+      });
+    }
+
+    prismaClient = globalAny.__bt4_prisma;
+  } catch {
     prismaClient = null;
   }
 }

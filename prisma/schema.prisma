@@ -140,3 +140,12 @@ enum LicenseType { MIT GPL COMMERCIAL CUSTOM }
 enum ProductStatus { PENDING APPROVED REJECTED }
 enum OrderStatus { PENDING COMPLETED FAILED REFUNDED }
 enum PayoutStatus { PENDING PROCESSING COMPLETED FAILED }
+
+model PurchaseToken {
+  id        String   @id
+  productId String
+  price     Decimal  @db.Decimal(10, 2)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

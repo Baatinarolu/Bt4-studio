@@ -1,10 +1,13 @@
 /**
- * BT4 Studio - Database Seed Script
+ * BT4 Studio - Production Database Seed
  * 
- * Run with: npx prisma db seed   (after setting DATABASE_URL)
- * or: npm run db:seed
+ * Run with:
+ *   npx prisma db seed
+ *   or
+ *   npm run db:seed
  * 
- * This creates realistic demo data that matches the current UI.
+ * This script works with both development and production Postgres.
+ * It creates realistic demo data matching the current UI.
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -14,15 +17,16 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding BT4 Studio database...');
 
-  // Clean up in development
+  // Clean existing data (safe for dev)
   await prisma.review.deleteMany();
   await prisma.license.deleteMany();
   await prisma.order.deleteMany();
   await prisma.product.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.category.deleteMany();
 
-  // === USERS ===
+  // ============================================
+  // USERS
+  // ============================================
   const seller1 = await prisma.user.create({
     data: {
       email: 'sarah@dev.com',
@@ -61,34 +65,21 @@ async function main() {
     },
   });
 
-  await prisma.user.create({
+  const admin = await prisma.user.create({
     data: {
       email: 'admin@bt4.studio',
       username: 'admin',
-      displayName: 'Admin',
+      displayName: 'Platform Admin',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
       role: 'ADMIN',
     },
   });
 
-  // === CATEGORIES ===
-  const catNext = await prisma.category.create({
-    data: { name: 'Next.js', slug: 'nextjs', icon: '▲', description: 'Next.js apps, templates & plugins' },
-  });
-  const catUI = await prisma.category.create({
-    data: { name: 'UI Kits', slug: 'ui-kits', icon: '🎨', description: 'Design systems and component libraries' },
-  });
-  const catAPI = await prisma.category.create({
-    data: { name: 'APIs', slug: 'apis', icon: '🔌', description: 'REST, GraphQL & backend services' },
-  });
-  const catSaaS = await prisma.category.create({
-    data: { name: 'SaaS Starters', slug: 'saas', icon: '🚀', description: 'Production-ready SaaS boilerplates' },
-  });
-  const catReact = await prisma.category.create({
-    data: { name: 'React', slug: 'react', icon: '⚛️', description: 'React components, hooks & libraries' },
-  });
+  console.log('✅ Created users');
 
-  // === PRODUCTS ===
+  // ============================================
+  // PRODUCTS
+  // ============================================
   const product1 = await prisma.product.create({
     data: {
       sellerId: seller1.id,
@@ -99,7 +90,7 @@ async function main() {
       tags: ['stripe', 'nextjs', 'dashboard', 'payments'],
       price: 89,
       currency: 'USD',
-      fileUrl: 'https://r2.bt4.studio/demo/stripe-connect.zip', // placeholder
+      fileUrl: 'https://r2.bt4.studio/demo/stripe-connect.zip',
       previewImages: ['https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800'],
       demoUrl: 'https://stripe-dashboard-demo.vercel.app',
       licenseType: 'MIT',
@@ -133,7 +124,33 @@ async function main() {
     },
   });
 
-  // === SAMPLE ORDER (from previous Telegram purchase) ===
+  const product3 = await prisma.product.create({
+    data: {
+      sellerId: seller1.id,
+      title: 'SaaS Starter Kit - Next.js',
+      slug: 'saas-starter-kit-nextjs',
+      description: 'Production-ready SaaS starter with authentication, billing, team management, and beautiful dashboard.',
+      category: 'SAAS_STARTERS',
+      tags: ['saas', 'nextjs', 'stripe', 'auth'],
+      price: 129,
+      currency: 'USD',
+      fileUrl: 'https://r2.bt4.studio/demo/saas-starter.zip',
+      previewImages: ['https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800'],
+      demoUrl: 'https://saas-demo.vercel.app',
+      licenseType: 'COMMERCIAL',
+      status: 'APPROVED',
+      salesCount: 562,
+      ratingAvg: 4.7,
+      ratingCount: 143,
+      version: '3.1.0',
+    },
+  });
+
+  console.log('✅ Created products');
+
+  // ============================================
+  // SAMPLE ORDER + LICENSE + REVIEW
+  // ============================================
   const sampleOrder = await prisma.order.create({
     data: {
       buyerId: buyer.id,
@@ -144,17 +161,20 @@ async function main() {
       status: 'COMPLETED',
       downloadToken: 'dl_' + crypto.randomUUID(),
       downloadExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      license: {
-        create: {
-          key: 'BT4-P1-9K2M4X7P',
-          usageLimit: 5,
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        },
-      },
     },
   });
 
-  // === SAMPLE REVIEW ===
+  await prisma.license.create({
+    data: {
+      orderId: sampleOrder.id,
+      productId: product1.id,
+      buyerId: buyer.id,
+      key: 'BT4-P1-9K2M4X7P',
+      usageLimit: 5,
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+    },
+  });
+
   await prisma.review.create({
     data: {
       productId: product1.id,
@@ -164,16 +184,28 @@ async function main() {
     },
   });
 
-  console.log('✅ Seed completed successfully!');
-  console.log(`Created:`);
-  console.log(`- ${await prisma.user.count()} users`);
-  console.log(`- ${await prisma.product.count()} products`);
-  console.log(`- ${await prisma.order.count()} orders`);
+  console.log('✅ Created sample order, license, and review');
+
+  // ============================================
+  // SUMMARY
+  // ============================================
+  const userCount = await prisma.user.count();
+  const productCount = await prisma.product.count();
+  const orderCount = await prisma.order.count();
+
+  console.log('\n🎉 Seed completed successfully!');
+  console.log(`   Users:    ${userCount}`);
+  console.log(`   Products: ${productCount}`);
+  console.log(`   Orders:   ${orderCount}`);
+  console.log('\nDemo accounts:');
+  console.log('   Seller: sarah@dev.com / alex@design.dev');
+  console.log('   Buyer:  jane@buyer.dev');
+  console.log('   Admin:  admin@bt4.studio');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

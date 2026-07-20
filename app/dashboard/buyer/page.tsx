@@ -136,84 +136,126 @@ export default function MyPurchases() {
             const expired = isExpired(order);
 
             return (
-              <div
-                key={order.id}
-                className="border border-border rounded-2xl p-6 flex flex-col md:flex-row gap-6 bg-card"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-4">
-                    {order.product?.preview_url && (
-                      <img
-                        src={order.product.preview_url}
-                        alt=""
-                        className="w-20 h-14 object-cover rounded-lg border border-border flex-shrink-0"
-                      />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-lg tracking-tight">
-                        {order.product?.title}
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-0.5">
-                        Purchased {formatDate(order.created_at)} • by {order.product?.seller?.username}
-                      </div>
-
-                      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                        <div className="font-mono bg-muted px-3 py-1 rounded text-xs border border-border">
-                          {order.license_key || "License pending"}
-                        </div>
-                        <span className={`text-xs px-2.5 py-px rounded-full ${
-                          order.status === "completed" 
-                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" 
-                            : "bg-amber-100 text-amber-700"
-                        }`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col md:items-end justify-between gap-4 md:gap-0 md:text-right">
-                  <div>
-                    <div className="font-semibold text-xl tabular-nums tracking-tighter">
-                      {formatCurrency(order.amount)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">One-time purchase</div>
-                  </div>
-
-                  <div className="flex flex-col md:items-end gap-2">
-                    {order.download_token && !expired ? (
-                      <Button 
-                        onClick={() => handleDownload(order)} 
-                        className="btn-primary gap-2 w-full md:w-auto"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download
-                      </Button>
-                    ) : expired ? (
-                      <Button variant="outline" disabled className="w-full md:w-auto">
-                        Link expired
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => handleDownload(order)} 
-                        variant="outline"
-                        className="gap-2 w-full md:w-auto"
-                      >
-                        <Download className="h-4 w-4" />
-                        Download (demo)
-                      </Button>
-                    )}
-
-                    <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 md:justify-end">
-                      <Clock className="h-3 w-3" />
-                      {remaining} / 5 downloads left
-                      {order.download_expires && (
-                        <> • expires {new Date(order.download_expires).toLocaleDateString()}</>
+              <div key={order.id} className="border border-border rounded-2xl bg-card overflow-hidden">
+                <div className="p-6 flex flex-col md:flex-row gap-6">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-4">
+                      {order.product?.preview_url && (
+                        <img
+                          src={order.product.preview_url}
+                          alt=""
+                          className="w-20 h-14 object-cover rounded-lg border border-border flex-shrink-0"
+                        />
                       )}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-lg tracking-tight">
+                          {order.product?.title}
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-0.5">
+                          Purchased {formatDate(order.created_at)} • by {order.product?.seller?.username}
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                          <div className="font-mono bg-muted px-3 py-1 rounded text-xs border border-border">
+                            {order.license_key || "License pending"}
+                          </div>
+                          <span className={`text-xs px-2.5 py-px rounded-full ${
+                            order.status === "completed" 
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" 
+                              : "bg-amber-100 text-amber-700"
+                          }`}>
+                            {order.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:items-end justify-between gap-4 md:gap-0 md:text-right">
+                    <div>
+                      <div className="font-semibold text-xl tabular-nums tracking-tighter">
+                        {formatCurrency(order.amount)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">One-time purchase</div>
+                    </div>
+
+                    <div className="flex flex-col md:items-end gap-2">
+                      {order.download_token && !expired ? (
+                        <Button 
+                          onClick={() => handleDownload(order)} 
+                          className="btn-primary gap-2 w-full md:w-auto"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download
+                        </Button>
+                      ) : expired ? (
+                        <Button variant="outline" disabled className="w-full md:w-auto">
+                          Link expired
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => handleDownload(order)} 
+                          variant="outline"
+                          className="gap-2 w-full md:w-auto"
+                        >
+                          <Download className="h-4 w-4" />
+                          Download (demo)
+                        </Button>
+                      )}
+
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 md:justify-end">
+                        <Clock className="h-3 w-3" />
+                        {remaining} / 5 downloads left
+                        {order.download_expires && (
+                          <> • expires {new Date(order.download_expires).toLocaleDateString()}</>
+                        )}
+                      </div>
+
+                      {/* Review prompt (after purchase) */}
+                      <button 
+                        onClick={() => {
+                          setReviewingOrderId(order.id);
+                          setReviewText("");
+                          setReviewRating(5);
+                        }}
+                        className="text-[11px] text-accent hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <Star className="h-3 w-3" /> Write a review
+                      </button>
                     </div>
                   </div>
                 </div>
+
+                {/* Inline review form */}
+                {reviewingOrderId === order.id && (
+                  <div className="border-t pt-4 px-6 pb-6 bg-muted/20">
+                    <div className="flex gap-1 mb-2">
+                      {[1,2,3,4,5].map(n => (
+                        <button 
+                          key={n} 
+                          onClick={() => setReviewRating(n)} 
+                          className={`text-xl ${n <= reviewRating ? 'text-amber-500' : 'text-muted-foreground/50'}`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      placeholder="Share your experience with this product..."
+                      className="w-full h-20 text-sm bg-background border border-border rounded p-3"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => submitReview(order)}>
+                        Submit Review
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setReviewingOrderId(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
