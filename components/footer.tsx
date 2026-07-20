@@ -44,7 +44,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t text-[10px] flex flex-col md:flex-row md:items-center justify-between gap-2">
-          <div>© {new Date().getFullYear()} BT4 Studio Studio. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} BT4 Studio. All rights reserved.</div>
           <div>20% platform fee • 80% to creators • Built with Next.js</div>
         </div>
       </div>

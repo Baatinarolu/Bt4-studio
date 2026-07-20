@@ -1,11 +1,12 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { products, categories } from "@/lib/db";
+import { getAllApprovedProducts } from "@/lib/data";
+import { categories } from "@/lib/db";
 import { Product, FilterState, SortOption } from "@/lib/types";
 import { Search, Filter, Grid, List } from "lucide-react";
 
@@ -13,6 +14,9 @@ function MarketplaceContent() {
   const searchParams = useSearchParams();
   const initialSearch = searchParams.get("search") || "";
   const initialCategory = searchParams.get("category") || "";
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [filters, setFilters] = React.useState<FilterState>({
     categories: initialCategory ? [initialCategory] : [],
@@ -27,21 +31,30 @@ function MarketplaceContent() {
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = React.useState(false);
 
-  // Filter and sort products
-  let filteredProducts: Product[] = [...products].filter(p => p.status === "approved");
+  // Load products (real DB or mock)
+  useEffect(() => {
+    async function load() {
+      setIsLoading(true);
+      const data = await getAllApprovedProducts();
+      setProducts(data);
+      setIsLoading(false);
+    }
+    load();
+  }, []);
 
-  // Search
+  // Filter and sort
+  let filteredProducts = [...products];
+
   if (filters.search) {
     const q = filters.search.toLowerCase();
     filteredProducts = filteredProducts.filter(p =>
       p.title.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
       p.tags.some(t => t.toLowerCase().includes(q)) ||
-      p.seller?.username.toLowerCase().includes(q)
+      p.seller?.username?.toLowerCase().includes(q)
     );
   }
 
-  // Category filter
   if (filters.categories.length > 0) {
     const catIds = filters.categories.map(slug => {
       const cat = categories.find(c => c.slug === slug);
@@ -50,22 +63,18 @@ function MarketplaceContent() {
     filteredProducts = filteredProducts.filter(p => catIds.includes(p.category_id));
   }
 
-  // Price
   filteredProducts = filteredProducts.filter(p => 
     p.price >= filters.priceMin && p.price <= filters.priceMax
   );
 
-  // Rating
   if (filters.minRating > 0) {
     filteredProducts = filteredProducts.filter(p => p.rating_avg >= filters.minRating);
   }
 
-  // License filter
   if (filters.licenses.length > 0) {
     filteredProducts = filteredProducts.filter(p => filters.licenses.includes(p.license));
   }
 
-  // Sort
   switch (filters.sort) {
     case "newest":
       filteredProducts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -81,8 +90,6 @@ function MarketplaceContent() {
       break;
     case "price-high":
       filteredProducts.sort((a, b) => b.price - a.price);
-      break;
-    default:
       break;
   }
 
@@ -120,6 +127,10 @@ function MarketplaceContent() {
     });
   };
 
+  if (isLoading) {
+    return <div className="max-w-7xl mx-auto px-6 py-20">Loading marketplace...</div>;
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
       <div className="flex items-end justify-between mb-8">
@@ -154,7 +165,7 @@ function MarketplaceContent() {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar Filters */}
+        {/* Filters Sidebar */}
         <div className={`lg:w-72 shrink-0 ${showFilters ? "block" : "hidden lg:block"}`}>
           <div className="sticky top-20 space-y-8">
             <div>
@@ -175,7 +186,6 @@ function MarketplaceContent() {
               </div>
             </div>
 
-            {/* Categories */}
             <div>
               <div className="text-sm font-semibold mb-3">Categories</div>
               <div className="space-y-1.5">
@@ -193,46 +203,21 @@ function MarketplaceContent() {
                       <span>{cat.icon}</span> {cat.name}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {products.filter(p => p.category_id === cat.id && p.status === "approved").length}
+                      {products.filter(p => p.category_id === cat.id).length}
                     </span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Price Range */}
             <div>
               <div className="text-sm font-semibold mb-3">Price</div>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    value={filters.priceMin}
-                    onChange={(e) => updateFilter("priceMin", parseInt(e.target.value) || 0)}
-                    className="text-sm"
-                    placeholder="Min"
-                  />
-                  <Input
-                    type="number"
-                    value={filters.priceMax}
-                    onChange={(e) => updateFilter("priceMax", parseInt(e.target.value) || 300)}
-                    className="text-sm"
-                    placeholder="Max"
-                  />
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="300"
-                  step="5"
-                  value={filters.priceMax}
-                  onChange={(e) => updateFilter("priceMax", parseInt(e.target.value))}
-                  className="w-full accent-emerald-600"
-                />
+              <div className="flex gap-2">
+                <Input type="number" value={filters.priceMin} onChange={(e) => updateFilter("priceMin", parseInt(e.target.value) || 0)} className="text-sm" placeholder="Min" />
+                <Input type="number" value={filters.priceMax} onChange={(e) => updateFilter("priceMax", parseInt(e.target.value) || 300)} className="text-sm" placeholder="Max" />
               </div>
             </div>
 
-            {/* Rating */}
             <div>
               <div className="text-sm font-semibold mb-3">Minimum rating</div>
               <div className="flex gap-1.5">
@@ -248,7 +233,6 @@ function MarketplaceContent() {
               </div>
             </div>
 
-            {/* Licenses */}
             <div>
               <div className="text-sm font-semibold mb-3">License</div>
               <div className="flex flex-wrap gap-2">
@@ -269,14 +253,11 @@ function MarketplaceContent() {
         {/* Results */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-5">
-            <div className="text-sm text-muted-foreground">
-              Showing {filteredProducts.length} results
-            </div>
-
+            <div className="text-sm text-muted-foreground">Showing {filteredProducts.length} results</div>
             <select
               value={filters.sort}
               onChange={(e) => updateFilter("sort", e.target.value as SortOption)}
-              className="bg-background border border-border text-sm px-3 py-1.5 rounded-md focus:outline-none"
+              className="bg-background border border-border text-sm px-3 py-1.5 rounded-md"
             >
               <option value="relevance">Relevance</option>
               <option value="newest">Newest first</option>
@@ -302,9 +283,7 @@ function MarketplaceContent() {
             <div className="space-y-3">
               {filteredProducts.map((product) => (
                 <a href={`/product/${product.slug}`} key={product.id} className="flex gap-5 border border-border p-4 rounded-xl hover:bg-muted/40 group">
-                  {product.preview_url && (
-                    <img src={product.preview_url} alt="" className="w-32 h-20 object-cover rounded-md flex-shrink-0" />
-                  )}
+                  {product.preview_url && <img src={product.preview_url} alt="" className="w-32 h-20 object-cover rounded-md flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between">
                       <div className="font-semibold text-lg tracking-tight group-hover:text-accent">{product.title}</div>

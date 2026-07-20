@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createProduct } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -185,24 +186,43 @@ export default function UploadWizard() {
     }
   };
 
-  // Submit
+  // Submit - now persists via unified data layer
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
-    // Simulate upload + virus scan + backend processing
-    await new Promise(resolve => setTimeout(resolve, 1800));
-    
-    // Simulate success
-    toast.success("Product submitted for review!", {
-      description: "You'll be notified once it's approved (usually within 24h).",
-      duration: 6000,
-    });
+    try {
+      const sellerId = user?.id || "u1"; // fallback for demo
 
-    // In real app: POST to /api/products
-    // For now redirect to dashboard
-    setTimeout(() => {
-      router.push("/seller/dashboard?submitted=true");
-    }, 1200);
+      await createProduct({
+        sellerId,
+        title: form.title,
+        slug: form.slug,
+        description: form.description,
+        category: form.category.toUpperCase().replace(/-/g, "_"),
+        tags: form.tags,
+        price: form.price,
+        currency: "USD",
+        fileUrl: "https://r2.bt4.studio/uploads/" + (form.file?.name || "product.zip"), // placeholder
+        previewImages: [], // In real app we'd upload images first
+        demoUrl: form.demoUrl || null,
+        licenseType: form.license as any,
+        version: "1.0.0",
+      });
+
+      toast.success("Product submitted for review!", {
+        description: "You'll be notified once it's approved (usually within 24h).",
+        duration: 6000,
+      });
+
+      setTimeout(() => {
+        router.push("/seller/dashboard?submitted=true");
+      }, 1200);
+    } catch (error) {
+      toast.error("Failed to submit product");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Progress

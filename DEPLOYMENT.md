@@ -1,4 +1,4 @@
-# BT4 Studio Studio — Deployment & Hand-off Guide
+# BT4 Studio — Deployment & Hand-off Guide
 
 ## Quick Deploy to Vercel
 
@@ -52,7 +52,7 @@ R2_PUBLIC_URL=https://...
 
 1. Open Telegram → search `@BotFather`
 2. Send `/newbot`
-3. Choose name: `BT4 Studio Studio`
+3. Choose name: `BT4 Studio`
 4. Choose username: `BT4 StudioBot` (or your own)
 5. Copy the token → add to `TELEGRAM_BOT_TOKEN`
 

@@ -1,10 +1,10 @@
-# BT4 Studio Studio
+# BT4 Studio
 
 **Premium digital marketplace for source code, SaaS templates, UI kits, APIs & developer tools.**
 
 Clean, editorial Swiss-style design — production ready and fully Vercel deployable.
 
-![BT4 Studio Studio](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200)
+![BT4 Studio](https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200)
 
 ## Features
 
