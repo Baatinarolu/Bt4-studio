@@ -93,6 +93,14 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-4 text-sm">
+        <Link href="/admin/products" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Products</Link>
+        <Link href="/admin/orders" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Orders</Link>
+        <Link href="/admin/users" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Users</Link>
+        <Link href="/admin/payouts" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Payouts</Link>
+        <Link href="/admin/disputes" className="px-3 py-1.5 rounded bg-muted hover:bg-muted/70">Disputes</Link>
+      </div>
+
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b">
         {(["moderation", "users", "orders", "disputes"] as const).map(tab => (
