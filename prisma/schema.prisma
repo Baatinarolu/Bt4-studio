@@ -17,6 +17,8 @@ model User {
   username        String   @unique
   displayName     String?
   avatar          String?
+  bio             String?  // Seller bio / about text
+  isVerified      Boolean  @default(false)
   role            UserRole @default(BUYER)
   telegramId      String?  @unique
   telegramUsername String?
