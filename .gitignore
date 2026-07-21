@@ -17,8 +17,4 @@ next-env.d.ts
 # vercel
 .vercel
 
-# =====================================
-# .gitignore OVERRIDE - USER REQUEST
-# We deliberately do NOT ignore .env.local
-# Real credentials are intentionally included
-# =====================================
+# NOTE: .env.local is DELIBERATELY NOT IGNORED (user request)
