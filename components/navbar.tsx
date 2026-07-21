@@ -169,17 +169,18 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Mobile Hamburger - crisp solid design (no blur, no opacity) */}
+          {/* Mobile Hamburger - CRISP solid design (no blur, no opacity, per prompt) */}
           <Sheet>
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-slate-100"
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </button>
             </SheetTrigger>
+
             <SheetContent
               side="right"
               className="w-80 border-l border-slate-800 bg-slate-950 p-0 sm:hidden"
@@ -213,11 +214,13 @@ export function Navbar() {
                       My Purchases
                     </Link>
 
-                    {(role === "SELLER" || role === "ADMIN") ? (
+                    {(role === "SELLER" || role === "ADMIN") && (
                       <Link href="/seller/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
                         Seller Dashboard
                       </Link>
-                    ) : (
+                    )}
+
+                    {role !== "SELLER" && role !== "ADMIN" && (
                       <Link href="/seller/apply" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
                         Become a Seller
                       </Link>
@@ -233,7 +236,7 @@ export function Navbar() {
 
                     <button
                       onClick={() => signOut({ callbackUrl: "/" })}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-red-400 hover:bg-red-950/30"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-red-400 hover:bg-red-950/30"
                     >
                       Log Out
                     </button>
