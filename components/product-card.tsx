@@ -11,7 +11,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   return (
-    <Link href={`/product/${product.slug}`} className="group">
+    <Link href={`/product/${product.slug}`} className="group block w-full">
       <div className="product-card bg-card border border-border rounded-xl overflow-hidden h-full flex flex-col">
         {product.preview_url && (
           <div className="relative aspect-[16/9] bg-muted overflow-hidden">
@@ -20,15 +20,15 @@ export function ProductCard({ product }: ProductCardProps) {
               alt={product.title}
               className="w-full h-full object-cover group-hover:scale-[1.015] transition-transform duration-300"
             />
-            <div className="absolute top-3 right-3 bg-background/95 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium border border-border">
-              {product.category?.name}
+            <div className="absolute top-2 right-2 bg-background/95 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-medium border border-border">
+              {product.category?.name || product.category}
             </div>
           </div>
         )}
 
-        <div className="p-5 flex flex-col flex-1">
+        <div className="p-4 sm:p-5 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <h3 className="font-semibold text-[15px] leading-tight tracking-[-0.015em] line-clamp-2 group-hover:text-accent transition-colors">
+            <h3 className="font-semibold text-base sm:text-[15px] leading-tight tracking-[-0.015em] line-clamp-2 group-hover:text-accent transition-colors">
               {product.title}
             </h3>
             <div className="font-mono text-sm font-semibold text-right shrink-0 tabular-nums">
@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-xs">
+          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 text-xs">
             <div className="flex items-center gap-1.5">
               <img
                 src={product.seller?.avatar}

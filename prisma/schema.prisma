@@ -1,5 +1,5 @@
-// BT4 Studio — Phase 2 Prisma Schema
-// Matches exact Phase 2 requirements: Telegram-native payments, crypto payouts, full RBAC
+// BT4 Studio — Phase 3 MVP Prisma Schema
+// Minimal schema for working marketplace
 
 generator client {
   provider = "prisma-client-js"
@@ -11,192 +11,73 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  email             String?   @unique
-  username          String    @unique
-  displayName       String?
-  avatar            String?
-  bio               String?   @db.Text
-  role              UserRole  @default(BUYER)
-  isSellerApproved  Boolean   @default(false)
+  id              String   @id @default(cuid())
+  email           String?  @unique
+  username        String   @unique
+  displayName     String?
+  avatar          String?
+  role            UserRole @default(BUYER)
+  telegramId      String?  @unique
+  telegramUsername String?
+  passwordHash    String?
+  isSellerApproved Boolean @default(false)
+  payoutWallet    String?  // USDT TRC20
+  createdAt       DateTime @default(now())
 
-  // Telegram-specific
-  telegramId        String?   @unique
-  telegramUsername  String?
-
-  // Payout (crypto only)
-  payoutWallet      String?   // USDT TRC20
-  payoutMethod      PayoutMethod @default(USDT_TRC20)
-
-  // Auth
-  passwordHash      String?   // for email users
-  emailVerified     DateTime?
-  resetToken        String?   @unique
-  resetTokenExpiry  DateTime?
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  products          Product[] @relation("SellerProducts")
-  ordersAsBuyer     Order[]   @relation("BuyerOrders")
-  ordersAsSeller    Order[]   @relation("SellerOrders")
-  reviews           Review[]
-  payouts           Payout[]
-  conversations     Conversation[]
-  adminLogs         AdminLog[]
+  products        Product[]
+  orders          Order[]
 }
 
 model Product {
-  id              String        @id @default(cuid())
-  sellerId        String
-  title           String
-  slug            String        @unique
-  description     String        @db.Text
-  category        Category
-  tags            String[]
-  price           Decimal       @db.Decimal(10, 2)
-  currency        String        @default("USD")
-  fileUrl         String
-  previewImages   String[]
-  demoUrl         String?
-  licenseType     LicenseType   @default(MIT)
-  status          ProductStatus @default(PENDING)
-  rejectionReason String?
-  salesCount      Int           @default(0)
-  ratingAvg       Float         @default(0)
-  ratingCount     Int           @default(0)
-  version         String        @default("1.0.0")
-  isFeatured      Boolean       @default(false)
-  featuredUntil   DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id            String   @id @default(cuid())
+  sellerId      String
+  title         String
+  slug          String   @unique
+  description   String   @db.Text
+  category      String
+  price         Decimal  @db.Decimal(10, 2)
+  fileUrl       String
+  previewImages String[]
+  status        ProductStatus @default(PENDING)
+  salesCount    Int      @default(0)
+  createdAt     DateTime @default(now())
 
-  seller          User          @relation("SellerProducts", fields: [sellerId], references: [id])
-  orders          Order[]
-  reviews         Review[]
-  licenses        License[]
+  seller        User     @relation(fields: [sellerId], references: [id])
+  orders        Order[]
 }
 
 model Order {
-  id                   String      @id @default(cuid())
-  buyerId              String
-  productId            String
-  amount               Decimal     @db.Decimal(10, 2)
-  platformFee          Decimal     @db.Decimal(10, 2)
-  sellerEarnings       Decimal     @db.Decimal(10, 2)
+  id              String      @id @default(cuid())
+  buyerId         String
+  productId       String
+  amount          Decimal     @db.Decimal(10, 2)
+  platformFee     Decimal     @db.Decimal(10, 2)
+  sellerEarnings  Decimal     @db.Decimal(10, 2)
+  status          OrderStatus @default(PENDING)
+  paymentProof    String?
+  downloadToken   String      @unique
+  downloadExpires DateTime
+  telegramChatId  String?
+  createdAt       DateTime    @default(now())
 
-  // Payment tracking (Telegram-native)
-  status               OrderStatus @default(PENDING)
-  paymentMethod        PaymentMethod @default(USDT_TRC20)
-  paymentProof         String?     // tx hash or screenshot URL
-  paymentConfirmedBy   String?     // Admin ID
-
-  // Delivery
-  downloadToken        String      @unique
-  downloadCount        Int         @default(0)
-  maxDownloads         Int         @default(5)
-  downloadExpires      DateTime
-  deliveredAt          DateTime?
-
-  // Telegram
-  telegramChatId       String?
-  telegramMsgId        String?
-
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
-
-  buyer                User        @relation("BuyerOrders", fields: [buyerId], references: [id])
-  product              Product     @relation(fields: [productId], references: [id])
-  license              License?
+  buyer           User        @relation(fields: [buyerId], references: [id])
+  product         Product     @relation(fields: [productId], references: [id])
 }
 
-model License {
-  id          String    @id @default(cuid())
-  orderId     String    @unique
-  productId   String
-  buyerId     String
-  key         String    @unique
-  usageLimit  Int?
-  expiresAt   DateTime?
-  createdAt   DateTime  @default(now())
-
-  order       Order     @relation(fields: [orderId], references: [id])
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
 }
 
-model Review {
-  id           String   @id @default(cuid())
-  productId    String
-  buyerId      String
-  rating       Int
-  comment      String?
-  sellerReply  String?
-  sellerReplyAt DateTime?
-  createdAt    DateTime @default(now())
-
-  product      Product  @relation(fields: [productId], references: [id])
-  buyer        User     @relation(fields: [buyerId], references: [id])
+enum ProductStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
-model Payout {
-  id            String        @id @default(cuid())
-  sellerId      String
-  amount        Decimal       @db.Decimal(10, 2)
-  status        PayoutStatus  @default(PENDING)
-  walletAddress String
-  txHash        String?
-  processedAt   DateTime?
-  createdAt     DateTime      @default(now())
-
-  seller        User          @relation(fields: [sellerId], references: [id])
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
-
-model Conversation {
-  id        String    @id @default(cuid())
-  buyerId   String
-  sellerId  String
-  productId String?
-  createdAt DateTime  @default(now())
-
-  buyer     User      @relation(fields: [buyerId], references: [id])
-  messages  Message[]
-}
-
-model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  senderId       String
-  content        String
-  createdAt      DateTime @default(now())
-
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-}
-
-model AdminLog {
-  id          String   @id @default(cuid())
-  adminId     String
-  action      String   // "APPROVE_PRODUCT", "REJECT_PRODUCT", "CONFIRM_PAYMENT", "BAN_USER", etc.
-  targetType  String   // "PRODUCT", "USER", "ORDER"
-  targetId    String
-  details     Json?
-  createdAt   DateTime @default(now())
-
-  admin       User     @relation(fields: [adminId], references: [id])
-}
-
-model PurchaseToken {
-  id        String   @id
-  productId String
-  price     Decimal  @db.Decimal(10, 2)
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
-
-enum UserRole { BUYER SELLER ADMIN }
-enum Category { NEXTJS UI_KITS APIS SAAS_STARTERS REACT PYTHON MOBILE DEVOPS OTHER }
-enum LicenseType { MIT GPL COMMERCIAL CUSTOM }
-enum ProductStatus { PENDING APPROVED REJECTED }
-enum OrderStatus { PENDING PAYMENT_RECEIVED COMPLETED FAILED REFUNDED }
-enum PayoutStatus { PENDING PROCESSING COMPLETED FAILED }
-enum PayoutMethod { USDT_TRC20 USDT_ERC20 BTC }
-enum PaymentMethod { USDT_TRC20 USDT_ERC20 BTC MANUAL }

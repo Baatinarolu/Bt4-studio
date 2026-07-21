@@ -107,7 +107,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
     : [product.preview_url || "https://picsum.photos/id/1015/1200/630"];
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-9 gap-y-8">
         {/* Gallery */}
         <div className="lg:col-span-7">
@@ -119,12 +119,12 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
             />
           </div>
           {images.length > 1 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2">
               {images.map((img: string, idx: number) => (
                 <button 
                   key={idx} 
                   onClick={() => setSelectedImage(idx)} 
-                  className={`w-20 h-14 rounded-md overflow-hidden border ${selectedImage === idx ? "border-accent" : "border-border"}`}
+                  className={`w-16 h-12 sm:w-20 sm:h-14 flex-shrink-0 rounded-md overflow-hidden border ${selectedImage === idx ? "border-accent" : "border-border"}`}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -135,7 +135,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
 
         {/* Purchase Sidebar */}
         <div className="lg:col-span-5">
-          <div className="sticky top-20">
+          <div className="sticky top-4 lg:top-20">
             <div className="mb-3">
               <div className="inline px-3 py-1 text-xs font-medium bg-muted rounded-full">
                 {product.category?.name || product.category} • {product.version}
@@ -164,10 +164,9 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
               <Button 
                 onClick={handleBuyViaTelegram} 
                 disabled={isPurchasing}
-                className="w-full h-14 text-base btn-primary gap-2 text-lg font-medium"
+                className="w-full h-14 text-base btn-primary gap-2 text-lg font-medium min-h-[44px]"
               >
-                {isPurchasing ? "Connecting to Telegram..." : "Buy via Telegram"}
-                <span className="text-base opacity-70">→</span>
+                {isPurchasing ? "Connecting to Telegram..." : "💬 Purchase on Telegram — " + formatCurrency(product.price)}
               </Button>
               <p className="text-[13px] text-center text-muted-foreground">Instant delivery via Telegram + email</p>
             </div>

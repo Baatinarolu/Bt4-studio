@@ -34,15 +34,15 @@ export default function LandingPage() {
   return (
     <div className="max-w-7xl mx-auto px-6">
       {/* Hero */}
-      <div className="pt-16 pb-20 text-center">
+      <div className="pt-12 sm:pt-16 pb-16 sm:pb-20 text-center px-4">
         <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-muted text-sm font-medium mb-6">
           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" /> 8,427 products sold this month
         </div>
 
-        <h1 className="text-6xl sm:text-7xl tracking-tighter font-semibold max-w-5xl mx-auto leading-none">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tighter font-semibold max-w-5xl mx-auto leading-none">
           Premium code.<br />Built by developers,<br />for developers.
         </h1>
-        <p className="mt-6 text-xl text-muted-foreground max-w-lg mx-auto">
+        <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-lg mx-auto">
           Buy and sell high-quality source code, SaaS starters, UI kits, APIs, and developer tools. 
           Instant delivery via Telegram.
         </p>
@@ -88,7 +88,7 @@ export default function LandingPage() {
             View all <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
           {featured.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
