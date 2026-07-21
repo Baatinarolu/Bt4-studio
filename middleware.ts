@@ -34,13 +34,18 @@ export async function middleware(request: NextRequest) {
   let userRole = 'BUYER'
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    try {
+      const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
 
-    userRole = profile?.role?.toUpperCase() || 'BUYER'
+      userRole = (profile?.role || 'BUYER').toUpperCase()
+    } catch {
+      // Profile row may not exist yet — default to BUYER so we don't block the user
+      userRole = 'BUYER'
+    }
   }
 
   // Admin routes — return 404 for non-admins
