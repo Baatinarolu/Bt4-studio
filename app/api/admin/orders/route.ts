@@ -20,7 +20,18 @@ export async function PATCH(req: NextRequest) {
   const { id, action } = await req.json();
   if (action === "confirm") {
     if (prisma) {
-      await prisma.order.update({ where: { id }, data: { status: "COMPLETED", paymentConfirmedBy: (token as any).id } });
+      await prisma.order.update({
+        where: { id },
+        data: {
+          status: "COMPLETED",
+          paymentConfirmedBy: (token as any).id || "admin",
+        },
+      });
+    } else {
+      // Fallback via data layer (mock or real)
+      const { updateOrderPayment, completeOrder } = await import("@/lib/data");
+      await updateOrderPayment(id, undefined, (token as any).id || "admin");
+      await completeOrder(id);
     }
     return NextResponse.json({ success: true });
   }

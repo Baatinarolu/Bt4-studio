@@ -63,6 +63,7 @@ model Order {
   sellerEarnings  Decimal     @db.Decimal(10, 2)
   status          OrderStatus @default(PENDING)
   paymentProof    String?
+  paymentConfirmedBy String?   // Admin who confirmed manual proof (audit trail)
   downloadToken   String      @unique
   downloadExpires DateTime
   telegramChatId  String?

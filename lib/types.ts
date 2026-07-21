@@ -64,13 +64,15 @@ export interface Order {
   product?: Product;
   amount: number;
   currency: string;
-  status: 'pending' | 'completed' | 'refunded';
+  status: 'pending' | 'completed' | 'refunded' | 'PAYMENT_RECEIVED';
   created_at: string;
   telegram_payment_msg_id?: string;
   license_key?: string | null;
   download_count: number;
   download_token?: string;
   download_expires?: string;
+  paymentProof?: string;
+  paymentConfirmedBy?: string;
 }
 
 export interface Review {
