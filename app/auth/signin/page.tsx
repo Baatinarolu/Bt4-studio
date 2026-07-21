@@ -25,52 +25,82 @@ function SignInContent() {
     setIsLoading(true);
 
     try {
-      // Real working Telegram-style login using Supabase (pseudo account)
-      const tgId = Date.now();
-      const tgUsername = "tg_" + tgId;
-      const pseudoEmail = `tg_${tgId}@bt4.studio`;
-      const pseudoPassword = "TgDemo!" + tgId;
+      // ============================================
+      // TELEGRAM DEMO LOGIN (FIXED REAL SUPABASE ACCOUNT)
+      // ============================================
+      // This is a **real** Supabase user (not fake data).
+      // It simulates "Continue with Telegram" for testing.
+      //
+      // WHY IT IS NOT A REAL TELEGRAM LOGIN:
+      // - Real Telegram login uses Telegram's official Login Widget + backend verification of Telegram's signed data (hash, auth_date, etc.).
+      // - We have not implemented the real Telegram OAuth / Widget flow yet.
+      // - This is a stable fixed account so the full app (auth → purchases → seller → admin) works immediately.
+      //
+      // FIXED CREDENTIALS (same every time you click the button):
+      //   Email:    telegram@bt4.studio
+      //   Password: TelegramDemo123!
+      //
+      // The code below creates the account if needed, then signs in.
 
-      // Sign up (Supabase will return error if already exists - we ignore)
-      await supabase.auth.signUp({
-        email: pseudoEmail,
-        password: pseudoPassword,
-        options: {
-          data: {
-            username: tgUsername,
-            display_name: "Telegram User",
-            telegram_id: String(tgId),
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      const DEMO_TG_EMAIL = "telegram@bt4.studio";
+      const DEMO_TG_PASSWORD = "TelegramDemo123!";
+      const DEMO_TG_USERNAME = "telegram_demo";
+
+      // Try direct sign in first (fastest)
+      let { data, error } = await supabase.auth.signInWithPassword({
+        email: DEMO_TG_EMAIL,
+        password: DEMO_TG_PASSWORD,
+      });
+
+      // If invalid credentials or user not found → create the account then sign in
+      if (error) {
+        console.log("[Telegram Demo] signIn failed, creating account...", error.message);
+
+        await supabase.auth.signUp({
+          email: DEMO_TG_EMAIL,
+          password: DEMO_TG_PASSWORD,
+          options: {
+            data: {
+              username: DEMO_TG_USERNAME,
+              display_name: "Telegram Demo",
+              telegram_id: "999888777",
+              avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+            }
           }
-        }
-      });
+        });
 
-      // Sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: pseudoEmail,
-        password: pseudoPassword,
-      });
+        // Sign in after creation
+        const retry = await supabase.auth.signInWithPassword({
+          email: DEMO_TG_EMAIL,
+          password: DEMO_TG_PASSWORD,
+        });
+        data = retry.data;
+        error = retry.error;
+      }
 
       if (error) throw error;
 
-      // Create/update profile
+      // Make sure profile exists + promote baatinarolu@gmail.com to ADMIN
       if (data.user) {
+        const isAdmin = data.user.email === "baatinarolu@gmail.com" || DEMO_TG_EMAIL === "baatinarolu@gmail.com";
+
         await supabase.from('users').upsert({
           id: data.user.id,
-          email: pseudoEmail,
-          username: tgUsername,
-          display_name: "Telegram User",
+          email: DEMO_TG_EMAIL,
+          username: DEMO_TG_USERNAME,
+          display_name: "Telegram Demo",
           avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-          role: 'BUYER',
-          telegram_id: String(tgId),
+          role: isAdmin ? 'ADMIN' : 'BUYER',
+          telegram_id: "999888777",
         }, { onConflict: 'id' });
       }
 
-      toast.success("Signed in via Telegram!");
+      toast.success("Signed in via Telegram Demo");
       window.location.href = callbackUrl;
+
     } catch (e: any) {
-      console.error("Telegram signin error:", e);
-      toast.error(e.message || "Telegram login failed. Use Email tab instead.");
+      console.error("Telegram demo error:", e);
+      toast.error(e.message || "Telegram demo login failed. Use Email tab instead.");
     } finally {
       setIsLoading(false);
     }
@@ -107,14 +137,15 @@ function SignInContent() {
       console.error("Supabase login error:", error);
       toast.error(error.message || "Login failed. Check your email/password or create an account first.");
     } else {
-      // Ensure profile exists in public.users (very important for middleware)
+      // Ensure profile exists + FORCE ADMIN for baatinarolu@gmail.com
       if (data.user) {
+        const isAdmin = data.user.email === "baatinarolu@gmail.com";
         try {
           await supabase.from('users').upsert({
             id: data.user.id,
             email: data.user.email,
             username: data.user.email?.split('@')[0] || 'user',
-            role: 'BUYER',
+            role: isAdmin ? 'ADMIN' : 'BUYER',
           }, { onConflict: 'id' });
         } catch (e) {
           console.warn('Profile upsert skipped');
@@ -209,6 +240,9 @@ function SignInContent() {
           >
             📱 Continue with Telegram (Demo)
           </Button>
+          <p className="text-[10px] text-center text-muted-foreground -mt-1">
+            Uses fixed demo account (telegram@bt4.studio)
+          </p>
         </div>
 
         {/* Divider */}
