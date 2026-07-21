@@ -1,6 +1,5 @@
-# Minimal .gitignore - deliberately clean per user request
-# .env.local is INTENTIONALLY NOT IGNORED
-# Real Supabase credentials are being pushed (risk accepted)
+# Minimal .gitignore - deliberately clean
+# .env.local is INTENTIONALLY NOT IGNORED (user explicit request - risk accepted)
 
 /node_modules
 /.next/
@@ -9,3 +8,5 @@
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+# .gitignore is now completely clean - no rules block .env.local
