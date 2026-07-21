@@ -318,7 +318,7 @@ export async function createProduct(data: any) {
         tags: data.tags || [],
         price: data.price,
         currency: data.currency || 'USD',
-        fileUrl: data.fileUrl || 'https://placeholder.r2.bt4.studio/pending.zip',
+        fileUrl: data.fileUrl || 'https://placeholder.supabase.co/storage/v1/object/public/product-files/pending.zip',
         previewImages: data.previewImages || [],
         demoUrl: data.demoUrl,
         licenseType: data.licenseType || 'MIT',

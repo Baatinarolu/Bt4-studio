@@ -10,7 +10,7 @@ export default function DownloadPage() {
   const token = params.token;
 
   const handleDownload = () => {
-    // In real app: this would be a signed, time-limited URL from R2/S3
+    // In real app: this would be a signed URL from Supabase Storage (product-files bucket)
     toast.success("Starting download...");
     // Simulate download
     setTimeout(() => {

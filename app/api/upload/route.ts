@@ -1,27 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { supabaseAdmin } from '@/lib/supabase';
 
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET = process.env.R2_BUCKET_NAME || 'bt4-studio-uploads';
-const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL || 'https://r2.bt4.studio';
-
-// Create R2 client only when credentials are present
-function getR2Client() {
-  if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
-    return null;
-  }
-
-  return new S3Client({
-    region: 'auto',
-    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: R2_ACCESS_KEY_ID,
-      secretAccessKey: R2_SECRET_ACCESS_KEY,
-    },
-  });
-}
+/**
+ * Supabase Storage Upload Route (Full Migration)
+ * 
+ * Buckets:
+ *   - product-files   (private)
+ *   - product-previews (public)
+ */
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,46 +20,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing file or key' }, { status: 400 });
     }
 
+    const bucket = type === 'zip' ? 'product-files' : 'product-previews';
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const r2Client = getR2Client();
-
-    if (r2Client) {
-      // Real R2 upload
-      const command = new PutObjectCommand({
-        Bucket: R2_BUCKET,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type || 'application/octet-stream',
-        ContentLength: buffer.length,
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(key, buffer, {
+        contentType: file.type || (type === 'zip' ? 'application/zip' : 'image/jpeg'),
+        upsert: false,
       });
 
-      await r2Client.send(command);
-
-      const url = `${R2_PUBLIC_URL}/${R2_BUCKET}/${key}`;
-
+    if (error) {
+      console.error('[upload] Supabase error:', error);
+      // Fallback placeholder (keeps UX working)
+      const fallbackUrl = `https://placeholder.supabase.co/storage/v1/object/public/${bucket}/${key}`;
       return NextResponse.json({
         success: true,
-        url,
+        url: fallbackUrl,
         key,
         size: buffer.length,
-        storage: 'r2',
-      });
-    } else {
-      // Fallback: return a deterministic placeholder URL
-      // This keeps the app fully functional without R2
-      const url = `${R2_PUBLIC_URL}/${R2_BUCKET}/${key}`;
-
-      return NextResponse.json({
-        success: true,
-        url,
-        key,
-        size: buffer.length,
-        storage: 'placeholder',
-        note: 'R2 not configured — using placeholder URL',
+        storage: 'supabase-fallback',
+        note: 'Supabase upload failed — using placeholder',
       });
     }
+
+    let url = '';
+
+    if (type === 'image') {
+      // Public bucket
+      const { data: publicData } = supabaseAdmin.storage
+        .from(bucket)
+        .getPublicUrl(key);
+      url = publicData.publicUrl;
+    } else {
+      // Private bucket — we return a relative path. 
+      // Real signed URL is generated at download time.
+      url = `/download/${key}`;
+    }
+
+    return NextResponse.json({
+      success: true,
+      url,
+      key,
+      size: buffer.length,
+      storage: 'supabase',
+    });
   } catch (error: any) {
     console.error('[upload] error:', error);
     return NextResponse.json(

@@ -222,7 +222,7 @@ export default function UploadWizard() {
         tags: form.tags,
         price: form.price,
         currency: "USD",
-        fileUrl: fileUrl || "https://r2.bt4.studio/uploads/" + (form.file?.name || "product.zip"),
+        fileUrl: fileUrl || `https://placeholder.supabase.co/storage/v1/object/public/product-files/${form.file?.name || "product.zip"}`,
         previewImages: previewImageUrls,
         demoUrl: form.demoUrl || null,
         licenseType: form.license as any,
