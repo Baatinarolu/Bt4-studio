@@ -106,13 +106,10 @@ export default function LandingPage() {
             <Link 
               key={cat.id} 
               href={`/marketplace?category=${cat.slug}`}
-              className="group border border-border hover:border-accent rounded-xl p-5 transition-all flex items-center gap-3 bg-card"
+              className="group border border-border hover:border-accent rounded-xl p-5 transition-all bg-card"
             >
-              <div className="text-3xl">{cat.icon}</div>
-              <div>
-                <div className="font-semibold text-sm group-hover:text-accent transition-colors">{cat.name}</div>
-                <div className="text-xs text-muted-foreground">{cat.description}</div>
-              </div>
+              <div className="font-semibold text-sm group-hover:text-accent transition-colors mb-1">{cat.name}</div>
+              <div className="text-xs text-muted-foreground">{cat.description}</div>
             </Link>
           ))}
         </div>
