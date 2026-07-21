@@ -1,5 +1,6 @@
-# Minimal .gitignore - deliberately clean
-# .env.local is INTENTIONALLY NOT IGNORED (user request - risk accepted)
+# .gitignore - deliberately minimal per user request
+# .env.local is INTENTIONALLY NOT IGNORED
+# Real credentials are being pushed (risk accepted)
 
 /node_modules
 /.next/
