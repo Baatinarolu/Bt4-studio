@@ -156,7 +156,13 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             /* UNAUTHENTICATED */
-            <Link href="/auth/signin">
+            <Link 
+              href={`/auth/signin?callbackUrl=${encodeURIComponent(
+                typeof window !== 'undefined' 
+                  ? window.location.pathname + window.location.search 
+                  : '/'
+              )}`}
+            >
               <Button variant="outline" size="sm">
                 Sign In
               </Button>

@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 
-export default function SignIn() {
+function SignInContent() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+
   const [mode, setMode] = useState<"telegram" | "email" | "signup">("telegram");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,13 +43,12 @@ export default function SignIn() {
 
       if (data.success) {
         toast.success("Signed in via Telegram!");
-        window.location.href = "/onboard";
+        window.location.href = callbackUrl;
       } else {
-        // Fallback to NextAuth credentials provider for demo
-        await signIn("telegram", { callbackUrl: "/onboard", redirect: true });
+        await signIn("telegram", { callbackUrl, redirect: true });
       }
     } catch (e) {
-      await signIn("telegram", { callbackUrl: "/onboard", redirect: true });
+      await signIn("telegram", { callbackUrl, redirect: true });
     } finally {
       setIsLoading(false);
     }
@@ -59,13 +62,14 @@ export default function SignIn() {
     const res = await signIn("email", {
       email,
       password,
+      callbackUrl,
       redirect: false,
     });
 
     if (res?.ok) {
-      window.location.href = "/dashboard/buyer";
+      window.location.href = callbackUrl;
     } else {
-      toast.error("Login failed. Try demo: admin@bt4.studio (any pass) or register first.");
+      toast.error("Login failed. Try demo: admin@bt4.studio / admin123");
     }
     setIsLoading(false);
   };
@@ -95,12 +99,13 @@ export default function SignIn() {
       const loginRes = await signIn("email", {
         email,
         password,
+        callbackUrl,
         redirect: false,
       });
 
       if (loginRes?.ok) {
         toast.success("Account created! Welcome to BT4 Studio.");
-        window.location.href = "/onboard";
+        window.location.href = callbackUrl;
       } else {
         toast.success("Account created. Please sign in.");
         setMode("email");
@@ -242,7 +247,7 @@ export default function SignIn() {
             By continuing you agree to our <Link href="/terms" className="underline">Terms</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.
           </p>
           <div className="mt-4">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to marketplace</Link>
+            <Link href={callbackUrl !== "/" ? callbackUrl : "/"} className="text-sm text-muted-foreground hover:text-foreground">← Back</Link>
           </div>
         </div>
 
@@ -253,3 +258,13 @@ export default function SignIn() {
     </div>
   );
 }
+
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="min-h-[85vh] flex items-center justify-center">Loading sign in...</div>}>
+      <SignInContent />
+    </Suspense>
+  );
+}
+

@@ -152,7 +152,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role || "BUYER";
+        token.role = ((user as any).role || "BUYER").toUpperCase();
         token.telegramId = (user as any).telegramId;
       }
       return token;
@@ -160,7 +160,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }: any) {
       if (session.user) {
         (session.user as any).id = token.id as string;
-        (session.user as any).role = token.role as string || "BUYER";
+        (session.user as any).role = (token.role as string || "BUYER").toUpperCase();
         (session.user as any).telegramId = token.telegramId;
       }
       return session;
