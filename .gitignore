@@ -1,5 +1,6 @@
-# Minimal .gitignore
-# .env.local is INTENTIONALLY NOT IGNORED (user explicit request)
+# Minimal .gitignore - deliberately clean
+# .env.local is INTENTIONALLY NOT IGNORED (user request - risk accepted)
+
 /node_modules
 /.next/
 /build
@@ -7,6 +8,3 @@
 *.tsbuildinfo
 next-env.d.ts
 .vercel
-
-# .gitignore is deliberately clean - no .env rules
-# Real credentials in .env.local are being pushed (risk accepted)
