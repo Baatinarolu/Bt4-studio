@@ -69,13 +69,11 @@ export default function LandingPage() {
 
       {/* Trust bar */}
       <div className="border-t border-b py-4 mb-14 flex items-center justify-center gap-x-12 text-sm text-muted-foreground">
-        <div>Trusted by engineers at</div>
+        <div>Trusted by 4,200+ developers</div>
         <div className="flex gap-8 font-medium tracking-tight">
-          <span>Vercel</span>
-          <span>Stripe</span>
-          <span>Figma</span>
-          <span>Linear</span>
-          <span>Notion</span>
+          <span>10k+ products sold</span>
+          <span>4.9 avg rating</span>
+          <span>Instant Telegram delivery</span>
         </div>
       </div>
 
