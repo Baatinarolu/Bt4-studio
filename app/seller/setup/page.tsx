@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { Button } from "@/components/ui/button";
 import { GitBranch as Github, CreditCard, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
 export default function SellerSetup() {
-  const { data: session } = useSession();
+  const { data: session } = useSupabaseAuth();
   const user = session?.user as any;
 
   const [githubLinked, setGithubLinked] = useState(!!user?.github || true); // assume linked if GitHub auth

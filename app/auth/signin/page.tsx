@@ -2,10 +2,12 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 function SignInContent() {
   const searchParams = useSearchParams();
@@ -45,10 +47,11 @@ function SignInContent() {
         toast.success("Signed in via Telegram!");
         window.location.href = callbackUrl;
       } else {
-        await signIn("telegram", { callbackUrl, redirect: true });
+        // Fallback: try Supabase magic link or redirect
+        toast.error("Telegram login not fully wired yet. Use Email tab.");
       }
     } catch (e) {
-      await signIn("telegram", { callbackUrl, redirect: true });
+      toast.error("Telegram login failed");
     } finally {
       setIsLoading(false);
     }
@@ -59,17 +62,15 @@ function SignInContent() {
     if (!email || !password) return;
 
     setIsLoading(true);
-    const res = await signIn("email", {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      callbackUrl,
-      redirect: false,
     });
 
-    if (res?.ok) {
-      window.location.href = callbackUrl;
-    } else {
+    if (error) {
       toast.error("Login failed. Try demo: admin@bt4.studio / admin123");
+    } else {
+      window.location.href = callbackUrl;
     }
     setIsLoading(false);
   };
@@ -87,29 +88,21 @@ function SignInContent() {
 
     setIsLoading(true);
     try {
-      const regRes = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username, password, displayName, role: "BUYER" }),
-      });
-
-      const regData = await regRes.json();
-      if (!regData.success) throw new Error(regData.error);
-
-      const loginRes = await signIn("email", {
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        callbackUrl,
-        redirect: false,
+        options: {
+          data: {
+            username,
+            display_name: displayName,
+          }
+        }
       });
 
-      if (loginRes?.ok) {
-        toast.success("Account created! Welcome to BT4 Studio.");
-        window.location.href = callbackUrl;
-      } else {
-        toast.success("Account created. Please sign in.");
-        setMode("email");
-      }
+      if (error) throw error;
+
+      toast.success("Account created! Check your email or sign in.");
+      setMode("email");
     } catch (err: any) {
       toast.error(err.message || "Registration failed");
     } finally {

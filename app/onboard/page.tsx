@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Code2, ArrowRight, GitBranch as Github } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Onboard() {
-  const { data: session, update } = useSession();
+  const { data: session, update } = useSupabaseAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<"BUYER" | "SELLER" | null>(null);

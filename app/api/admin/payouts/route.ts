@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(req: NextRequest) {
-  const token = await getToken({ req });
-  if (!token || (token as any).role !== "ADMIN") {
+  const supabase = await createClient();
+  const { data: { user: token } } = await supabase.auth.getUser();
+  if (!token) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const { data: profile } = await supabase.from('users').select('role').eq('id', token.id).single();
+  if (!profile || profile.role !== "ADMIN") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json([
@@ -12,8 +17,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const token = await getToken({ req });
-  if (!token || (token as any).role !== "ADMIN") {
+  const supabase = await createClient();
+  const { data: { user: token } } = await supabase.auth.getUser();
+  if (!token) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const { data: profile } = await supabase.from('users').select('role').eq('id', token.id).single();
+  if (!profile || profile.role !== "ADMIN") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const { id, action, txHash } = await req.json();

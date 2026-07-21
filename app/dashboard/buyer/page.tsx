@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { getUserOrders, createReview } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Download, Clock, Star } from "lucide-react";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 
 export default function MyPurchases() {
-  const { data: session } = useSession();
+  const { data: session } = useSupabaseAuth();
   const [downloadCounts, setDownloadCounts] = useState<Record<string, number>>({});
   const [buyerOrders, setBuyerOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);

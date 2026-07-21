@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "sonner";
 
 export default function BecomeSeller() {
-  const { data: session } = useSession();
+  const { data: session } = useSupabaseAuth();
   const [payoutWallet, setPayoutWallet] = useState("");
   const [githubLink, setGithubLink] = useState("");
   const [bio, setBio] = useState("");

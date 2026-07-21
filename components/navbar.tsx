@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Menu, X, Sun, Moon, LogOut, Store, ShoppingBag, User, LayoutDashboard, Shield } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
-import { useSession, signOut } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,58 @@ import {
 } from "./ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet";
 
+const supabase = createClient();
+
+interface UserProfile {
+  id: string;
+  email: string;
+  username?: string;
+  display_name?: string;
+  avatar?: string;
+  role: string;
+  name?: string; // fallback
+}
+
 export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const { theme, setTheme } = useTheme();
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Supabase auth state
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (authUser) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', authUser.id)
+          .single();
+
+        if (profile) {
+          setUser({
+            id: profile.id,
+            email: profile.email || authUser.email || '',
+            username: profile.username,
+            display_name: profile.display_name,
+            avatar: profile.avatar,
+            role: profile.role || 'BUYER',
+          });
+        }
+      }
+      setLoading(false);
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      getUser();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,8 +76,8 @@ export function Navbar() {
     }
   };
 
-  const user = session?.user as any;
   const role = (user?.role || "BUYER").toUpperCase();
+  const isLoading = loading;
 
   return (
     <nav className="sticky top-0 z-40 border-b border-border bg-slate-950">
@@ -81,7 +129,7 @@ export function Navbar() {
           </Button>
 
           {/* Auth */}
-          {status === "loading" ? (
+          {isLoading ? (
             <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
           ) : user ? (
             /* AUTHENTICATED: Avatar Dropdown */
@@ -91,15 +139,15 @@ export function Navbar() {
                   type="button"
                   className="h-9 w-9 overflow-hidden rounded-full border border-border hover:ring-2 hover:ring-accent transition-all focus:outline-none"
                 >
-                  {user.avatar || user.image ? (
+                  {user.avatar ? (
                     <img
-                      src={user.avatar || user.image}
+                      src={user.avatar}
                       alt="Profile"
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className="h-full w-full bg-muted flex items-center justify-center text-sm font-medium">
-                      {user.username?.[0]?.toUpperCase() || user.name?.[0]?.toUpperCase() || "U"}
+                      {user.username?.[0]?.toUpperCase() || (user.display_name || user.email || "U").charAt(0).toUpperCase()}
                     </div>
                   )}
                 </button>
@@ -111,7 +159,7 @@ export function Navbar() {
                 className="z-50 w-56 rounded-lg border border-slate-800 bg-slate-950 p-1 shadow-2xl shadow-black/50"
               >
                 <DropdownMenuLabel>
-                  {user.displayName || user.name || user.username}
+                  {user.display_name || user.name || user.username || user.email?.split('@')[0]}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
@@ -150,7 +198,7 @@ export function Navbar() {
 
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => supabase.auth.signOut()}
                   className="text-red-400 focus:text-red-400 cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -200,7 +248,7 @@ export function Navbar() {
               {user && (
                 <div className="border-b border-slate-800 px-6 py-4">
                   <p className="text-sm font-medium text-slate-100">
-                    {user.displayName || user.username}
+                    {user.display_name || user.username || user.email?.split('@')[0]}
                   </p>
                   <p className="text-xs text-slate-500">{user.email}</p>
                 </div>
@@ -268,7 +316,7 @@ export function Navbar() {
 
                     <button
                       type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => supabase.auth.signOut()}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-950/30"
                     >
                       <LogOut className="h-4 w-4" />

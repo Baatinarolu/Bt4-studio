@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createProduct } from "@/lib/data";
@@ -49,7 +49,7 @@ const CATEGORIES = [
 const LICENSES = ["MIT", "Commercial", "GPL", "Custom"];
 
 export default function UploadWizard() {
-  const { data: session } = useSession();
+  const { data: session } = useSupabaseAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);

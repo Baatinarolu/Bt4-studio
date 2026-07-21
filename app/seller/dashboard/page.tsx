@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { Button } from "@/components/ui/button";
 import { getAllApprovedProducts } from "@/lib/data";
 import { Plus, TrendingUp, DollarSign, Users, Download } from "lucide-react";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Product } from "@/lib/types";
 
 export default function SellerDashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSupabaseAuth();
   const [activeTab, setActiveTab] = useState<"products" | "analytics" | "payouts">("products");
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);

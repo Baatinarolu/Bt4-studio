@@ -43,6 +43,7 @@ model Product {
   price         Decimal  @db.Decimal(10, 2)
   currency      String   @default("USD")
   fileUrl       String
+  telegramFileId String?   // Telegram private channel file id for delivery
   previewImages String[]
   demoUrl       String?
   version       String   @default("1.0.0")

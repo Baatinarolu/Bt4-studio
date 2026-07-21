@@ -1,76 +1,56 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
 
-/**
- * Supabase Storage Upload Route (Full Migration)
- * 
- * Buckets:
- *   - product-files   (private)
- *   - product-previews (public)
- */
+export async function POST(req: Request) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData();
-    const file = formData.get('file') as File | null;
-    const key = formData.get('key') as string | null;
-    const type = formData.get('type') as string | null; // 'zip' | 'image'
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!file || !key) {
-      return NextResponse.json({ error: 'Missing file or key' }, { status: 400 });
-    }
+  const formData = await req.formData()
+  const file = formData.get('file') as File
+  const productId = formData.get('productId') as string
 
-    const bucket = type === 'zip' ? 'product-files' : 'product-previews';
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const { data, error } = await supabaseAdmin.storage
-      .from(bucket)
-      .upload(key, buffer, {
-        contentType: file.type || (type === 'zip' ? 'application/zip' : 'image/jpeg'),
-        upsert: false,
-      });
-
-    if (error) {
-      console.error('[upload] Supabase error:', error);
-      // Fallback placeholder (keeps UX working)
-      const fallbackUrl = `https://placeholder.supabase.co/storage/v1/object/public/${bucket}/${key}`;
-      return NextResponse.json({
-        success: true,
-        url: fallbackUrl,
-        key,
-        size: buffer.length,
-        storage: 'supabase-fallback',
-        note: 'Supabase upload failed — using placeholder',
-      });
-    }
-
-    let url = '';
-
-    if (type === 'image') {
-      // Public bucket
-      const { data: publicData } = supabaseAdmin.storage
-        .from(bucket)
-        .getPublicUrl(key);
-      url = publicData.publicUrl;
-    } else {
-      // Private bucket — we return a relative path. 
-      // Real signed URL is generated at download time.
-      url = `/download/${key}`;
-    }
-
-    return NextResponse.json({
-      success: true,
-      url,
-      key,
-      size: buffer.length,
-      storage: 'supabase',
-    });
-  } catch (error: any) {
-    console.error('[upload] error:', error);
-    return NextResponse.json(
-      { error: 'Upload failed', details: error.message },
-      { status: 500 }
-    );
+  if (!file || !productId) {
+    return NextResponse.json({ error: 'Missing file or productId' }, { status: 400 })
   }
+
+  // === Send to Telegram Storage Channel ===
+  const botToken = process.env.TELEGRAM_BOT_TOKEN!
+  const channelId = process.env.TELEGRAM_STORAGE_CHANNEL_ID!
+
+  const tgForm = new FormData()
+  tgForm.append('chat_id', channelId)
+  tgForm.append('document', file, file.name)
+  tgForm.append('caption', `Product: ${productId} | Seller: ${user.id}`)
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendDocument`, {
+    method: 'POST',
+    body: tgForm,
+  })
+
+  const tgData = await tgRes.json()
+
+  if (!tgData.ok) {
+    console.error('Telegram upload failed:', tgData)
+    return NextResponse.json({ error: 'Telegram upload failed', details: tgData }, { status: 500 })
+  }
+
+  const fileId = tgData.result.document?.file_id || tgData.result.video?.file_id
+
+  if (!fileId) {
+    return NextResponse.json({ error: 'No file_id returned from Telegram' }, { status: 500 })
+  }
+
+  // Update product
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ telegramFileId: fileId })
+    .eq('id', productId)
+
+  if (updateError) {
+    return NextResponse.json({ error: 'Failed to save file_id', details: updateError }, { status: 500 })
+  }
+
+  return NextResponse.json({ success: true, fileId })
 }

@@ -197,3 +197,86 @@ th {
     transform: translateY(0) scale(1);
   }
 }
+
+/* ============================================
+   FORCE SOLID BACKGROUNDS — NO TRANSPARENCY / BLUR
+   Fixes dropdown & mobile menu "Colour Riot"
+   ============================================ */
+
+@layer base {
+  /* Radix dropdowns / menus */
+  [data-radix-popper-content-wrapper] [role="menu"],
+  [role="menu"] {
+    background-color: #020617 !important; /* slate-950 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Sheet / Dialog */
+  [data-radix-dialog-content],
+  [data-radix-sheet-content] {
+    background-color: #020617 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Overlays (dark but no blur) */
+  [data-radix-dialog-overlay],
+  [data-radix-sheet-overlay] {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Navbar explicit solid classes */
+.nav-dropdown,
+.mobile-sheet {
+  background-color: #020617 !important;
+  border-color: #334155 !important;
+}
+
+/* ============================================
+   FORCE SOLID BACKGROUNDS — NO TRANSPARENCY / BLUR
+   (Fixes "Colour Riot" dropdown + mobile menu)
+   ============================================ */
+
+@layer base {
+  /* Radix dropdowns / menus / popovers */
+  [data-radix-popper-content-wrapper] [role="menu"],
+  [data-radix-popper-content-wrapper] [data-state="open"],
+  [role="menu"],
+  [data-radix-collection-item] {
+    background-color: #020617 !important; /* slate-950 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5) !important;
+  }
+
+  /* Sheet / Dialog content */
+  [data-radix-dialog-content],
+  [data-radix-sheet-content] {
+    background-color: #020617 !important; /* slate-950 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Overlays — dark but no blur */
+  [data-radix-dialog-overlay],
+  [data-radix-sheet-overlay] {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Explicit solid backgrounds for Navbar components */
+.nav-dropdown {
+  background-color: #020617 !important;
+  border-color: #334155 !important;
+}
+
+.mobile-sheet {
+  background-color: #020617 !important;
+  border-color: #334155 !important;
+}
