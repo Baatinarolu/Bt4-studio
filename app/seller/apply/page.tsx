@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useSupabaseAuth } from "@/lib/supabase/use-auth";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export default function BecomeSeller() {
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!payoutWallet || payoutWallet.length < 10) {
       toast.error("Please enter a valid USDT TRC20 wallet address");

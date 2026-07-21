@@ -18,7 +18,7 @@ function MarketplaceContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [filters, setFilters] = React.useState<FilterState>({
+  const [filters, setFilters] = useState<FilterState>({
     categories: initialCategory ? [initialCategory] : [],
     priceMin: 0,
     priceMax: 300,
@@ -28,8 +28,8 @@ function MarketplaceContent() {
     sort: "relevance",
   });
 
-  const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = React.useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Load products (real DB or mock)
   useEffect(() => {
