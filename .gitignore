@@ -17,4 +17,5 @@ next-env.d.ts
 # vercel
 .vercel
 
-# NOTE: .env.local is DELIBERATELY NOT IGNORED (user request)
+# NOTE: .env.local is INTENTIONALLY NOT IGNORED
+# Real credentials are being pushed (user request)
