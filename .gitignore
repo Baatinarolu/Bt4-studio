@@ -1,21 +1,12 @@
-# Minimal .gitignore - .env.local is DELIBERATELY NOT IGNORED
-# per explicit user request (risk accepted)
-
-# dependencies
+# Minimal .gitignore
+# .env.local is INTENTIONALLY NOT IGNORED (user explicit request)
 /node_modules
-
-# next.js
 /.next/
-
-# production
 /build
-
-# misc
 .DS_Store
-
-# typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# vercel
 .vercel
+
+# .gitignore is deliberately clean - no .env rules
+# Real credentials in .env.local are being pushed (risk accepted)
