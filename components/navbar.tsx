@@ -169,7 +169,7 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Mobile Hamburger - CRISP solid design (per prompt: solid bg-slate-950, NO blur, NO opacity) */}
+          {/* Mobile Hamburger - CRISP solid design (exactly per prompt: solid bg-slate-950, no blur, no opacity) */}
           <Sheet>
             <SheetTrigger asChild>
               <button
@@ -192,7 +192,7 @@ export function Navbar() {
                 <span className="text-lg font-semibold text-slate-100">BT4 Studio</span>
               </div>
 
-              {/* User Info */}
+              {/* User Info (if logged in) */}
               {user && (
                 <div className="border-b border-slate-800 px-6 py-4">
                   <p className="text-sm font-medium text-slate-100">
@@ -202,12 +202,13 @@ export function Navbar() {
                 </div>
               )}
 
-              {/* Navigation */}
+              {/* Navigation Links */}
               <nav className="flex flex-col gap-1 p-4">
                 <Link
                   href="/marketplace"
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                 >
+                  <Store className="h-4 w-4" />
                   Marketplace
                 </Link>
 
@@ -215,6 +216,7 @@ export function Navbar() {
                   href="/for-sellers"
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                 >
+                  <ShoppingBag className="h-4 w-4" />
                   For Sellers
                 </Link>
 
@@ -226,6 +228,7 @@ export function Navbar() {
                       href="/dashboard/buyer"
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                     >
+                      <User className="h-4 w-4" />
                       My Purchases
                     </Link>
 
@@ -234,6 +237,7 @@ export function Navbar() {
                         href="/seller/dashboard"
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                       >
+                        <LayoutDashboard className="h-4 w-4" />
                         Seller Dashboard
                       </Link>
                     ) : (
@@ -241,6 +245,7 @@ export function Navbar() {
                         href="/seller/apply"
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                       >
+                        <User className="h-4 w-4" />
                         Become a Seller
                       </Link>
                     )}
@@ -250,6 +255,7 @@ export function Navbar() {
                         href="/admin"
                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-slate-900"
                       >
+                        <Shield className="h-4 w-4" />
                         Admin Panel
                       </Link>
                     )}
@@ -261,6 +267,7 @@ export function Navbar() {
                       onClick={() => signOut({ callbackUrl: "/" })}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-950/30"
                     >
+                      <LogOut className="h-4 w-4" />
                       Log Out
                     </button>
                   </>
@@ -271,6 +278,7 @@ export function Navbar() {
                       href="/auth/signin"
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
                     >
+                      <User className="h-4 w-4" />
                       Sign In
                     </Link>
                   </>
