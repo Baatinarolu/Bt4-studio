@@ -21,21 +21,15 @@ function SignInContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // ==================== REAL TELEGRAM AUTH (PER-USER) ====================
-  // Every Telegram user gets their **own unique account**:
-  //   tg_{their_telegram_id}@bt4.studio
-  //
-  // Password is derived on the server using the bot token.
-  // Backend fully verifies Telegram's cryptographic signature.
-  // This is the real flow — no shared/demo accounts.
-
   const handleTelegramSignIn = () => {
-    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot';
+    // MUST use the NUMERIC bot ID (8862600842), not the username.
+    // This is the root cause of "bot id required" errors.
+    const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || '8862600842';
     const origin = window.location.origin;
     const returnTo = `${origin}/auth/signin`;
 
-    // Official Telegram Login redirect (real OAuth)
-    const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botUsername)}&origin=${encodeURIComponent(origin)}&return_to=${encodeURIComponent(returnTo)}`;
+    // Official Telegram OAuth using numeric bot_id
+    const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botId)}&origin=${encodeURIComponent(origin)}&return_to=${encodeURIComponent(returnTo)}`;
     window.location.href = url;
   };
 
@@ -238,11 +232,14 @@ function SignInContent() {
             disabled={isLoading}
             className="w-full h-12 text-base btn-primary flex items-center justify-center gap-2"
           >
-            📱 Continue with Telegram
+            <span className="inline-block w-5 h-5">
+              {/* Clean Telegram paper plane icon */}
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </span>
+            Continue with Telegram
           </Button>
-          <p className="text-[10px] text-center text-muted-foreground -mt-1">
-            Real Telegram login — you get your own account (tg_YOURID@bt4.studio)
-          </p>
         </div>
 
         {/* Divider */}
@@ -350,9 +347,7 @@ function SignInContent() {
           </div>
         </div>
 
-        <div className="mt-6 text-center text-[10px] text-muted-foreground font-mono">
-          Telegram: real per-user accounts • Admin: baatinarolu@gmail.com (Email tab)
-        </div>
+
       </div>
     </div>
   );
