@@ -169,7 +169,7 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Mobile Hamburger - CRISP solid design (no blur, no opacity, per prompt) */}
+          {/* Mobile Hamburger - CRISP solid design (per prompt: solid bg-slate-950, NO blur, NO opacity) */}
           <Sheet>
             <SheetTrigger asChild>
               <button
@@ -185,10 +185,14 @@ export function Navbar() {
               side="right"
               className="w-80 border-l border-slate-800 bg-slate-950 p-0 sm:hidden"
             >
+              <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+
+              {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
                 <span className="text-lg font-semibold text-slate-100">BT4 Studio</span>
               </div>
 
+              {/* User Info */}
               {user && (
                 <div className="border-b border-slate-800 px-6 py-4">
                   <p className="text-sm font-medium text-slate-100">
@@ -198,11 +202,19 @@ export function Navbar() {
                 </div>
               )}
 
-              <nav className="flex flex-col gap-1 p-4 text-sm">
-                <Link href="/marketplace" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+              {/* Navigation */}
+              <nav className="flex flex-col gap-1 p-4">
+                <Link
+                  href="/marketplace"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                >
                   Marketplace
                 </Link>
-                <Link href="/for-sellers" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+
+                <Link
+                  href="/for-sellers"
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                >
                   For Sellers
                 </Link>
 
@@ -210,24 +222,34 @@ export function Navbar() {
                   <>
                     <div className="my-2 border-t border-slate-800" />
 
-                    <Link href="/dashboard/buyer" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                    <Link
+                      href="/dashboard/buyer"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                    >
                       My Purchases
                     </Link>
 
-                    {(role === "SELLER" || role === "ADMIN") && (
-                      <Link href="/seller/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                    {(role === "SELLER" || role === "ADMIN") ? (
+                      <Link
+                        href="/seller/dashboard"
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                      >
                         Seller Dashboard
                       </Link>
-                    )}
-
-                    {role !== "SELLER" && role !== "ADMIN" && (
-                      <Link href="/seller/apply" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                    ) : (
+                      <Link
+                        href="/seller/apply"
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                      >
                         Become a Seller
                       </Link>
                     )}
 
                     {role === "ADMIN" && (
-                      <Link href="/admin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium text-accent hover:bg-slate-900">
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-accent transition-colors hover:bg-slate-900"
+                      >
                         Admin Panel
                       </Link>
                     )}
@@ -235,8 +257,9 @@ export function Navbar() {
                     <div className="my-2 border-t border-slate-800" />
 
                     <button
+                      type="button"
                       onClick={() => signOut({ callbackUrl: "/" })}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-red-400 hover:bg-red-950/30"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-400 transition-colors hover:bg-red-950/30"
                     >
                       Log Out
                     </button>
@@ -244,7 +267,10 @@ export function Navbar() {
                 ) : (
                   <>
                     <div className="my-2 border-t border-slate-800" />
-                    <Link href="/auth/signin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                    <Link
+                      href="/auth/signin"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"
+                    >
                       Sign In
                     </Link>
                   </>
