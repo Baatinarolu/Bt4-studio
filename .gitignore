@@ -30,8 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files - user explicitly wants .env.local pushed (risk accepted)
+# .env*   # commented out so .env.local gets tracked and pushed
+! .env.local   # force include the real one
+.env.example
+.env*.example
+# (other .env* files remain ignored for safety, but .env.local is forced in)
 
 # vercel
 .vercel
