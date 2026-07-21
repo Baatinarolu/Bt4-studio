@@ -1,3 +1,6 @@
+# Minimal .gitignore - .env.local is DELIBERATELY NOT IGNORED
+# per explicit user request (risk accepted)
+
 # dependencies
 /node_modules
 
@@ -16,7 +19,3 @@ next-env.d.ts
 
 # vercel
 .vercel
-
-# .gitignore OVERRIDE - USER REQUEST
-# .env.local is deliberately NOT ignored.
-# Real credentials are intentionally pushed.
