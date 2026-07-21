@@ -6,9 +6,10 @@ export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   const { pathname } = request.nextUrl;
 
-  const userRole = (token as any)?.role || "BUYER";
+  const rawRole = (token as any)?.role || "BUYER";
+  const userRole = String(rawRole).toUpperCase();
 
-  // Admin routes — return 404 for non-admins
+  // Admin routes — return 404 for non-admins (as per prompt)
   if (pathname.startsWith("/admin")) {
     if (!token || userRole !== "ADMIN") {
       return NextResponse.rewrite(new URL("/404", request.url));

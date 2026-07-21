@@ -32,7 +32,7 @@ export function Navbar() {
   const role = (user?.role || "BUYER").toUpperCase();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
+    <nav className="sticky top-0 z-50 border-b border-border bg-slate-950">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         {/* LEFT: Logo + Links */}
         <div className="flex items-center gap-6">
@@ -169,52 +169,84 @@ export function Navbar() {
             </Link>
           )}
 
-          {/* Mobile Hamburger */}
+          {/* Mobile Hamburger - crisp solid design (no blur, no opacity) */}
           <Sheet>
             <SheetTrigger asChild>
               <button
                 type="button"
-                className="sm:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground"
+                className="sm:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-background border-border">
-              <div className="flex flex-col gap-1 mt-8 text-sm">
-                <Link href="/marketplace" className="py-2">Marketplace</Link>
-                <Link href="/for-sellers" className="py-2">For Sellers</Link>
+            <SheetContent
+              side="right"
+              className="w-80 border-l border-slate-800 bg-slate-950 p-0 sm:hidden"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+                <span className="text-lg font-semibold text-slate-100">BT4 Studio</span>
+              </div>
 
-                <div className="h-px bg-border my-2" />
+              {user && (
+                <div className="border-b border-slate-800 px-6 py-4">
+                  <p className="text-sm font-medium text-slate-100">
+                    {user.displayName || user.username}
+                  </p>
+                  <p className="text-xs text-slate-500">{user.email}</p>
+                </div>
+              )}
+
+              <nav className="flex flex-col gap-1 p-4 text-sm">
+                <Link href="/marketplace" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                  Marketplace
+                </Link>
+                <Link href="/for-sellers" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                  For Sellers
+                </Link>
 
                 {user ? (
                   <>
-                    <div className="py-2 text-xs text-muted-foreground">
-                      {user.email || user.username}
-                    </div>
+                    <div className="my-2 border-t border-slate-800" />
 
-                    <Link href="/dashboard/buyer" className="py-2">My Purchases</Link>
+                    <Link href="/dashboard/buyer" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                      My Purchases
+                    </Link>
 
-                    {role === "SELLER" || role === "ADMIN" ? (
-                      <Link href="/seller/dashboard" className="py-2">Seller Dashboard</Link>
+                    {(role === "SELLER" || role === "ADMIN") ? (
+                      <Link href="/seller/dashboard" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                        Seller Dashboard
+                      </Link>
                     ) : (
-                      <Link href="/seller/apply" className="py-2">Become a Seller</Link>
+                      <Link href="/seller/apply" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                        Become a Seller
+                      </Link>
                     )}
 
                     {role === "ADMIN" && (
-                      <Link href="/admin" className="py-2 font-medium text-accent">Admin Panel</Link>
+                      <Link href="/admin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium text-accent hover:bg-slate-900">
+                        Admin Panel
+                      </Link>
                     )}
+
+                    <div className="my-2 border-t border-slate-800" />
 
                     <button
                       onClick={() => signOut({ callbackUrl: "/" })}
-                      className="py-2 text-left text-red-400"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-red-400 hover:bg-red-950/30"
                     >
                       Log Out
                     </button>
                   </>
                 ) : (
-                  <Link href="/auth/signin" className="py-2">Sign In</Link>
+                  <>
+                    <div className="my-2 border-t border-slate-800" />
+                    <Link href="/auth/signin" className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-300 hover:bg-slate-900 hover:text-slate-100">
+                      Sign In
+                    </Link>
+                  </>
                 )}
-              </div>
+              </nav>
             </SheetContent>
           </Sheet>
         </div>
