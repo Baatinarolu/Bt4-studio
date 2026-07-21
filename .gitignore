@@ -1,6 +1,6 @@
-# .gitignore - deliberately minimal per user request
+# Minimal .gitignore - deliberately clean per user request
 # .env.local is INTENTIONALLY NOT IGNORED
-# Real credentials are being pushed (risk accepted)
+# Real Supabase credentials are being pushed (risk accepted)
 
 /node_modules
 /.next/
