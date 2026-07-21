@@ -1,19 +1,8 @@
-!.env.local
-!.env
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
 .pnp.*
 .yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
 
 # next.js
 /.next/
@@ -30,7 +19,14 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
+# typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vercel
+.vercel
+
+# === .gitignore OVERRIDDEN PER USER REQUEST ===
+# We are explicitly NOT ignoring .env.local
+# All real credentials will be pushed (risk accepted)
