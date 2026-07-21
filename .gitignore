@@ -1,5 +1,5 @@
-# Minimal .gitignore - deliberately clean
-# .env.local is INTENTIONALLY NOT IGNORED (user explicit request - risk accepted)
+# .gitignore - deliberately minimal
+# .env.local is INTENTIONALLY NOT IGNORED (user request - risk accepted)
 
 /node_modules
 /.next/
@@ -9,4 +9,4 @@
 next-env.d.ts
 .vercel
 
-# .gitignore is now completely clean - no rules block .env.local
+# NO .env rules - .env.local is deliberately tracked with live credentials
