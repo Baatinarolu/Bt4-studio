@@ -1,24 +1,14 @@
 # dependencies
 /node_modules
-/.pnp
-.pnp.*
-.yarn/*
 
 # next.js
 /.next/
-/out/
 
 # production
 /build
 
 # misc
 .DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # typescript
 *.tsbuildinfo
@@ -27,7 +17,8 @@ next-env.d.ts
 # vercel
 .vercel
 
-# =============================================
+# =====================================
 # .gitignore OVERRIDE - USER REQUEST
-# Real credentials are intentionally pushed.
-# =============================================
+# We deliberately do NOT ignore .env.local
+# Real credentials are intentionally included
+# =====================================
