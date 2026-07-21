@@ -10,13 +10,29 @@ import Link from "next/link";
 import { Product } from "@/lib/types";
 
 export default function SellerDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<"products" | "analytics" | "payouts">("products");
   const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const user = session?.user as any;
+  const role = (user?.role || "").toUpperCase();
   const isSellerSetupComplete = true;
+
+  // Redirect if not authenticated or not allowed (SELLER or ADMIN)
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session?.user) {
+      window.location.href = "/auth/signin?callbackUrl=/seller/dashboard";
+      return;
+    }
+
+    if (role !== "SELLER" && role !== "ADMIN") {
+      window.location.href = "/seller/apply";
+      return;
+    }
+  }, [session, status, role]);
 
   useEffect(() => {
     async function load() {

@@ -154,6 +154,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = ((user as any).role || "BUYER").toUpperCase();
         token.telegramId = (user as any).telegramId;
+        token.username = (user as any).username || (user as any).email?.split('@')[0];
       }
       return token;
     },
@@ -162,6 +163,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id as string;
         (session.user as any).role = (token.role as string || "BUYER").toUpperCase();
         (session.user as any).telegramId = token.telegramId;
+        (session.user as any).username = token.username as string;
       }
       return session;
     },

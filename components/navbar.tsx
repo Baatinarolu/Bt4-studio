@@ -32,7 +32,7 @@ export function Navbar() {
   const role = (user?.role || "BUYER").toUpperCase();
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-slate-950">
+    <nav className="sticky top-0 z-40 border-b border-border bg-slate-950">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
         {/* LEFT: Logo + Links */}
         <div className="flex items-center gap-6">
@@ -105,7 +105,11 @@ export function Navbar() {
                 </button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-56 bg-card border-border">
+              <DropdownMenuContent 
+                align="end" 
+                sideOffset={8}
+                className="z-50 w-56 rounded-lg border border-slate-800 bg-slate-950 p-1 shadow-2xl shadow-black/50"
+              >
                 <DropdownMenuLabel>
                   {user.displayName || user.name || user.username}
                 </DropdownMenuLabel>
@@ -183,12 +187,12 @@ export function Navbar() {
 
             <SheetContent
               side="right"
-              className="w-80 border-l border-slate-800 bg-slate-950 p-0 sm:hidden"
+              className="z-50 w-80 border-l border-slate-800 bg-slate-950 p-0 shadow-2xl sm:hidden"
             >
               <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+              {/* Header with solid background */}
+              <div className="border-b border-slate-800 bg-slate-950 px-6 py-4">
                 <span className="text-lg font-semibold text-slate-100">BT4 Studio</span>
               </div>
 
@@ -203,7 +207,7 @@ export function Navbar() {
               )}
 
               {/* Navigation Links */}
-              <nav className="flex flex-col gap-1 p-4">
+              <nav className="flex flex-col gap-1 bg-slate-950 p-4">
                 <Link
                   href="/marketplace"
                   className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-900 hover:text-slate-100"

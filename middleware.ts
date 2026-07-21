@@ -16,13 +16,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Seller routes
+  // Seller routes — allow SELLER and ADMIN
   if (pathname.startsWith("/seller") || pathname.startsWith("/dashboard/seller")) {
     if (!token) {
-      return NextResponse.redirect(new URL("/auth/signin", request.url));
+      return NextResponse.redirect(new URL("/auth/signin?callbackUrl=" + encodeURIComponent(pathname), request.url));
     }
     if (userRole !== "SELLER" && userRole !== "ADMIN") {
-      return NextResponse.redirect(new URL("/onboard", request.url));
+      return NextResponse.redirect(new URL("/seller/apply", request.url));
     }
   }
 
