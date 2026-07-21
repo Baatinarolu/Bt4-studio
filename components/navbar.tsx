@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Search, Menu, X, Sun, Moon, LogOut } from "lucide-react";
+import { Search, Menu, X, Sun, Moon, LogOut, Store, ShoppingBag, User, LayoutDashboard, Shield } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
 import { useSession, signOut } from "next-auth/react";
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "./ui/sheet";
 
 export function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
