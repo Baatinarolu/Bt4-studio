@@ -24,34 +24,22 @@ function SignInContent() {
   const handleTelegramSignIn = async () => {
     setIsLoading(true);
 
-    // Simulate Telegram Login Widget
-    const fakeTgData = {
-      id: String(Date.now()),
-      first_name: "Demo User",
-      username: "demouser" + Math.floor(Math.random() * 1000),
-      photo_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-      auth_date: Math.floor(Date.now() / 1000),
-      hash: "demo-hash-" + Date.now(),
-    };
-
     try {
       const res = await fetch("/api/auth/telegram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fakeTgData),
+        body: JSON.stringify({}),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        toast.success("Signed in via Telegram!");
         window.location.href = callbackUrl;
       } else {
-        // Fallback: try Supabase magic link or redirect
-        toast.error("Telegram login not fully wired yet. Use Email tab.");
+        toast.error(data.error || "Telegram login is not available yet. Please use Email & Password below.");
       }
     } catch (e) {
-      toast.error("Telegram login failed");
+      toast.error("Telegram login is currently disabled. Use the Email tab.");
     } finally {
       setIsLoading(false);
     }
@@ -62,14 +50,29 @@ function SignInContent() {
     if (!email || !password) return;
 
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      toast.error("Login failed. Try demo: admin@bt4.studio / admin123");
+      console.error("Supabase login error:", error);
+      toast.error(error.message || "Login failed. Check your email/password or create an account first.");
     } else {
+      // Ensure profile exists in public.users (in case trigger didn't run)
+      if (data.user) {
+        try {
+          await supabase.from('users').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            username: data.user.email?.split('@')[0] || 'user',
+            role: 'BUYER',
+          }, { onConflict: 'id' });
+        } catch (e) {
+          console.warn('Profile upsert skipped (may need trigger)');
+        }
+      }
+      toast.success("Logged in successfully!");
       window.location.href = callbackUrl;
     }
     setIsLoading(false);
@@ -101,10 +104,28 @@ function SignInContent() {
 
       if (error) throw error;
 
-      toast.success("Account created! Check your email or sign in.");
+      // Try to ensure profile row exists (works even if trigger not run)
+      if (data.user) {
+        try {
+          await supabase.from('users').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            username: username || data.user.email?.split('@')[0],
+            display_name: displayName,
+            role: 'BUYER',
+          }, { onConflict: 'id' });
+        } catch (profileErr) {
+          console.warn('Profile creation skipped - run the SQL trigger if this persists');
+        }
+      }
+
+      toast.success("Account created! You can now sign in with Email tab (or check email for confirmation).");
       setMode("email");
+      // Auto-fill the email for convenience
+      setEmail(email);
     } catch (err: any) {
-      toast.error(err.message || "Registration failed");
+      console.error("Signup error:", err);
+      toast.error(err.message || "Registration failed. Make sure Email provider is enabled in Supabase.");
     } finally {
       setIsLoading(false);
     }
