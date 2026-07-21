@@ -29,6 +29,5 @@ next-env.d.ts
 
 # =============================================
 # .gitignore OVERRIDE - USER REQUEST
-# We are NOT ignoring .env.local on purpose.
 # Real credentials are intentionally pushed.
 # =============================================
