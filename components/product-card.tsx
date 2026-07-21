@@ -21,7 +21,7 @@ export function ProductCard({ product }: ProductCardProps) {
               className="w-full h-full object-cover group-hover:scale-[1.015] transition-transform duration-300"
             />
             <div className="absolute top-2 right-2 bg-background/95 backdrop-blur px-2 py-0.5 rounded-full text-[10px] font-medium border border-border">
-              {product.category?.name || product.category}
+              {typeof product.category === 'string' ? product.category : (product.category?.name || 'Digital')}
             </div>
           </div>
         )}

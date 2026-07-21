@@ -26,6 +26,7 @@ model User {
 
   products        Product[]
   orders          Order[]
+  reviews         Review[]
 }
 
 model Product {
@@ -38,12 +39,19 @@ model Product {
   price         Decimal  @db.Decimal(10, 2)
   fileUrl       String
   previewImages String[]
+  demoUrl       String?
+  version       String   @default("1.0.0")
+  licenseType   String   @default("MIT")
+  tags          String[]
   status        ProductStatus @default(PENDING)
   salesCount    Int      @default(0)
+  ratingAvg     Float    @default(0)
+  ratingCount   Int      @default(0)
   createdAt     DateTime @default(now())
 
   seller        User     @relation(fields: [sellerId], references: [id])
   orders        Order[]
+  reviews       Review[]
 }
 
 model Order {
@@ -80,4 +88,19 @@ enum OrderStatus {
   PENDING
   COMPLETED
   FAILED
+  PAYMENT_RECEIVED
+  REFUNDED
 }
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  buyerId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id])
+  buyer     User     @relation(fields: [buyerId], references: [id])
+}
+

@@ -29,6 +29,7 @@ export function Footer() {
               <div className="space-y-1">
                 <Link href="/admin">Admin</Link><br />
                 <Link href="/bot">Telegram Bot</Link><br />
+                <Link href="/for-sellers">For Sellers</Link><br />
                 <a href="https://github.com" target="_blank">GitHub</a>
               </div>
             </div>
