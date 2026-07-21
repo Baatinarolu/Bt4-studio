@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
 
 datasource db {
@@ -43,11 +44,12 @@ model Product {
   version       String   @default("1.0.0")
   licenseType   String   @default("MIT")
   tags          String[]
-  status        ProductStatus @default(PENDING)
-  salesCount    Int      @default(0)
-  ratingAvg     Float    @default(0)
-  ratingCount   Int      @default(0)
-  createdAt     DateTime @default(now())
+  status          ProductStatus @default(PENDING)
+  rejectionReason String?       // Admin explanation when rejecting
+  salesCount      Int      @default(0)
+  ratingAvg       Float    @default(0)
+  ratingCount     Int      @default(0)
+  createdAt       DateTime @default(now())
 
   seller        User     @relation(fields: [sellerId], references: [id])
   orders        Order[]

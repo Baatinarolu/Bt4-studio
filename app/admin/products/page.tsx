@@ -19,10 +19,13 @@ export default function AdminProducts() {
     toast.success("Product approved");
   };
 
-  const reject = async (id: string) => {
-    await rejectProduct(id);
+  const reject = async (id: string, title: string) => {
+    const reason = prompt(`Why are you rejecting "${title}"? (optional but recommended)`);
+    if (reason === null) return; // user cancelled
+
+    await rejectProduct(id, reason || undefined);
     setProducts(p => p.filter(x => x.id !== id));
-    toast.error("Product rejected");
+    toast.error("Product rejected" + (reason ? ` — ${reason}` : ""));
   };
 
   return (
@@ -46,7 +49,7 @@ export default function AdminProducts() {
             </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={() => approve(p.id)} className="btn-primary">Approve</Button>
-              <Button size="sm" variant="outline" onClick={() => reject(p.id)}>Reject</Button>
+              <Button size="sm" variant="outline" onClick={() => reject(p.id, p.title)}>Reject</Button>
             </div>
           </div>
         ))}

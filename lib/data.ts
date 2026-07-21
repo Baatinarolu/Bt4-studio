@@ -381,18 +381,24 @@ export async function approveProduct(productId: string) {
   }
 }
 
-export async function rejectProduct(productId: string) {
+export async function rejectProduct(productId: string, reason?: string) {
   if (!isRealPrisma()) {
     const products = (mock as any).products || [];
     const p = products.find((x: any) => x.id === productId);
-    if (p) p.status = 'REJECTED';
+    if (p) {
+      p.status = 'REJECTED';
+      if (reason) p.rejectionReason = reason;
+    }
     return true;
   }
 
   try {
     await prisma!.product.update({
       where: { id: productId },
-      data: { status: 'REJECTED' },
+      data: { 
+        status: 'REJECTED',
+        ...(reason && { rejectionReason: reason }),
+      },
     });
     return true;
   } catch {

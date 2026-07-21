@@ -25,10 +25,19 @@ export async function PATCH(req: NextRequest) {
   }
   if (action === "reject") {
     if (prisma) {
-      await prisma.product.update({ where: { id }, data: { status: "REJECTED", rejectionReason: reason } });
+      await prisma.product.update({
+        where: { id },
+        data: {
+          status: "REJECTED",
+          ...(reason && { rejectionReason: reason }),
+        },
+      });
     } else {
       const prod = (mock as any).products?.find((p: any) => p.id === id);
-      if (prod) { prod.status = "REJECTED"; prod.rejectionReason = reason; }
+      if (prod) {
+        prod.status = "REJECTED";
+        if (reason) prod.rejectionReason = reason;
+      }
     }
     return NextResponse.json({ success: true });
   }
