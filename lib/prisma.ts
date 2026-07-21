@@ -1,35 +1,28 @@
 /**
- * BT4 Studio - Safe Prisma Client
+ * BT4 Studio - Prisma Client (Prisma 6 compatible)
  *
- * CRITICAL: This file must never cause a build failure.
- * 
- * Strategy:
- * - Only attempt to load Prisma when DATABASE_URL is present
- * - Use require() + try/catch
- * - Use `any` for global to avoid index signature errors
- * - Return null on any failure path
+ * Safe singleton pattern that:
+ * - Only initializes when DATABASE_URL is present
+ * - Never crashes the build (graceful fallback to mock data in lib/data.ts)
+ * - Works on Vercel / serverless
  */
 
-let prismaClient: any = null;
+import { PrismaClient } from '@prisma/client'
 
-if (typeof window === 'undefined' && process.env.DATABASE_URL) {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { PrismaClient } = require('@prisma/client');
-
-    const globalAny = global as any;
-
-    if (!globalAny.__bt4_prisma) {
-      globalAny.__bt4_prisma = new PrismaClient({
-        log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
-      });
-    }
-
-    prismaClient = globalAny.__bt4_prisma;
-  } catch {
-    prismaClient = null;
-  }
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
 }
 
-export const prisma = prismaClient;
-export default prisma;
+export const prisma =
+  globalForPrisma.prisma ??
+  (process.env.DATABASE_URL
+    ? new PrismaClient({
+        log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      })
+    : null)
+
+if (process.env.NODE_ENV !== 'production' && prisma) {
+  globalForPrisma.prisma = prisma
+}
+
+export default prisma
