@@ -137,7 +137,7 @@ function SignInContent() {
       console.error("Supabase login error:", error);
       toast.error(error.message || "Login failed. Check your email/password or create an account first.");
     } else {
-      // Ensure profile exists + FORCE ADMIN for baatinarolu@gmail.com
+      // Ensure profile + FORCE baatinarolu@gmail.com to be ADMIN
       if (data.user) {
         const isAdmin = data.user.email === "baatinarolu@gmail.com";
         try {
@@ -241,7 +241,7 @@ function SignInContent() {
             📱 Continue with Telegram (Demo)
           </Button>
           <p className="text-[10px] text-center text-muted-foreground -mt-1">
-            Uses fixed demo account (telegram@bt4.studio)
+            Fixed account: telegram@bt4.studio / TelegramDemo123!
           </p>
         </div>
 
@@ -351,7 +351,7 @@ function SignInContent() {
         </div>
 
         <div className="mt-6 text-center text-[10px] text-muted-foreground font-mono">
-          Demo: admin@bt4.studio / admin123 (Email tab) • buyer: jane@buyer.dev
+          Telegram Demo: telegram@bt4.studio / TelegramDemo123! • Admin: baatinarolu@gmail.com (use Email tab)
         </div>
       </div>
     </div>
