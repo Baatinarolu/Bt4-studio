@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -21,90 +21,90 @@ function SignInContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleTelegramSignIn = async () => {
-    setIsLoading(true);
+  // ==================== REAL TELEGRAM AUTH (PER-USER) ====================
+  // Every Telegram user gets their **own unique account**:
+  //   tg_{their_telegram_id}@bt4.studio
+  //
+  // Password is derived on the server using the bot token.
+  // Backend fully verifies Telegram's cryptographic signature.
+  // This is the real flow — no shared/demo accounts.
 
-    try {
-      // ============================================
-      // TELEGRAM DEMO LOGIN (FIXED REAL SUPABASE ACCOUNT)
-      // ============================================
-      // This is a **real** Supabase user (not fake data).
-      // It simulates "Continue with Telegram" for testing.
-      //
-      // WHY IT IS NOT A REAL TELEGRAM LOGIN:
-      // - Real Telegram login uses Telegram's official Login Widget + backend verification of Telegram's signed data (hash, auth_date, etc.).
-      // - We have not implemented the real Telegram OAuth / Widget flow yet.
-      // - This is a stable fixed account so the full app (auth → purchases → seller → admin) works immediately.
-      //
-      // FIXED CREDENTIALS (same every time you click the button):
-      //   Email:    telegram@bt4.studio
-      //   Password: TelegramDemo123!
-      //
-      // The code below creates the account if needed, then signs in.
+  const handleTelegramSignIn = () => {
+    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot';
+    const origin = window.location.origin;
+    const returnTo = `${origin}/auth/signin`;
 
-      const DEMO_TG_EMAIL = "telegram@bt4.studio";
-      const DEMO_TG_PASSWORD = "TelegramDemo123!";
-      const DEMO_TG_USERNAME = "telegram_demo";
-
-      // Try direct sign in first (fastest)
-      let { data, error } = await supabase.auth.signInWithPassword({
-        email: DEMO_TG_EMAIL,
-        password: DEMO_TG_PASSWORD,
-      });
-
-      // If invalid credentials or user not found → create the account then sign in
-      if (error) {
-        console.log("[Telegram Demo] signIn failed, creating account...", error.message);
-
-        await supabase.auth.signUp({
-          email: DEMO_TG_EMAIL,
-          password: DEMO_TG_PASSWORD,
-          options: {
-            data: {
-              username: DEMO_TG_USERNAME,
-              display_name: "Telegram Demo",
-              telegram_id: "999888777",
-              avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-            }
-          }
-        });
-
-        // Sign in after creation
-        const retry = await supabase.auth.signInWithPassword({
-          email: DEMO_TG_EMAIL,
-          password: DEMO_TG_PASSWORD,
-        });
-        data = retry.data;
-        error = retry.error;
-      }
-
-      if (error) throw error;
-
-      // Make sure profile exists + promote baatinarolu@gmail.com to ADMIN
-      if (data.user) {
-        const isAdmin = data.user.email === "baatinarolu@gmail.com" || DEMO_TG_EMAIL === "baatinarolu@gmail.com";
-
-        await supabase.from('users').upsert({
-          id: data.user.id,
-          email: DEMO_TG_EMAIL,
-          username: DEMO_TG_USERNAME,
-          display_name: "Telegram Demo",
-          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-          role: isAdmin ? 'ADMIN' : 'BUYER',
-          telegram_id: "999888777",
-        }, { onConflict: 'id' });
-      }
-
-      toast.success("Signed in via Telegram Demo");
-      window.location.href = callbackUrl;
-
-    } catch (e: any) {
-      console.error("Telegram demo error:", e);
-      toast.error(e.message || "Telegram demo login failed. Use Email tab instead.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Official Telegram Login redirect (real OAuth)
+    const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botUsername)}&origin=${encodeURIComponent(origin)}&return_to=${encodeURIComponent(returnTo)}`;
+    window.location.href = url;
   };
+
+  // Handle redirect from Telegram (params: id, hash, auth_date, etc.)
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const hash = params.get('hash');
+
+    if (id && hash) {
+      const tgData = {
+        id: parseInt(id),
+        first_name: params.get('first_name') || '',
+        last_name: params.get('last_name') || '',
+        username: params.get('username') || '',
+        photo_url: params.get('photo_url') || '',
+        auth_date: parseInt(params.get('auth_date') || '0'),
+        hash,
+      };
+
+      (async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch('/api/auth/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tgData),
+          });
+
+          const result = await res.json();
+
+          if (!res.ok || !result.success) {
+            throw new Error(result.error || 'Telegram login failed');
+          }
+
+          // Set real session on the client
+          if (result.session) {
+            await supabase.auth.setSession({
+              access_token: result.session.access_token,
+              refresh_token: result.session.refresh_token,
+            });
+          }
+
+          // Ensure profile row
+          if (result.user) {
+            await supabase.from('users').upsert({
+              id: result.user.id,
+              email: result.user.email,
+              username: result.user.username || `tg_${result.user.telegram_id}`,
+              display_name: result.user.display_name,
+              avatar: result.user.avatar,
+              telegram_id: result.user.telegram_id?.toString(),
+              role: 'BUYER',
+            }, { onConflict: 'id' });
+          }
+
+          toast.success(`Welcome${result.user?.display_name ? `, ${result.user.display_name}` : ''}!`);
+          window.location.href = callbackUrl;
+
+        } catch (err: any) {
+          console.error('Real Telegram auth error:', err);
+          toast.error(err.message || 'Telegram login failed');
+        } finally {
+          setIsLoading(false);
+          window.history.replaceState({}, '', '/auth/signin');
+        }
+      })();
+    }
+  }, [callbackUrl]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -238,10 +238,10 @@ function SignInContent() {
             disabled={isLoading}
             className="w-full h-12 text-base btn-primary flex items-center justify-center gap-2"
           >
-            📱 Continue with Telegram (Demo)
+            📱 Continue with Telegram
           </Button>
           <p className="text-[10px] text-center text-muted-foreground -mt-1">
-            Fixed account: telegram@bt4.studio / TelegramDemo123!
+            Real Telegram login — you get your own account (tg_YOURID@bt4.studio)
           </p>
         </div>
 
@@ -351,7 +351,7 @@ function SignInContent() {
         </div>
 
         <div className="mt-6 text-center text-[10px] text-muted-foreground font-mono">
-          Telegram Demo: telegram@bt4.studio / TelegramDemo123! • Admin: baatinarolu@gmail.com (use Email tab)
+          Telegram: real per-user accounts • Admin: baatinarolu@gmail.com (Email tab)
         </div>
       </div>
     </div>
