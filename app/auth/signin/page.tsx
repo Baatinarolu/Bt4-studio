@@ -247,7 +247,7 @@ export default function SignIn() {
         </div>
 
         <div className="mt-6 text-center text-[10px] text-muted-foreground font-mono">
-          Demo: admin@bt4.studio (any pass) • buyer: jane@buyer.dev
+          Demo: admin@bt4.studio / admin123 (Email tab) • buyer: jane@buyer.dev
         </div>
       </div>
     </div>
