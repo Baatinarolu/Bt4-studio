@@ -7,8 +7,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { productSlug, price } = body;
 
-    // Prefer real logged-in user from Supabase session
-    let buyerId = body.buyerId || "demo-buyer";
+    // Get the best possible buyer ID
+    let buyerId = body.buyerId || "anonymous";
 
     try {
       const supabase = await createClient();
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         buyerId = user.id;
       }
     } catch (e) {
-      // fallback to passed buyerId or demo
+      // use whatever was passed or anonymous
     }
 
     const product = await getProductBySlug(productSlug);
