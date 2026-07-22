@@ -186,9 +186,32 @@ export async function createPendingOrder(productId: string, buyerId: string, amo
     const product = await getProductBySlug(productId);
     if (!product) throw new Error('Product not found');
 
+    const safeBuyerId = buyerId || 'anonymous';
+
+    // Ensure a buyer User row exists to satisfy FK (for anonymous + tg_{id} cases)
+    // Real Supabase UUID users are already created on login.
+    // This prevents "no user found" / FK errors on purchase + bot flows.
+    try {
+      await prisma!.user.upsert({
+        where: { id: safeBuyerId },
+        update: {},
+        create: {
+          id: safeBuyerId,
+          username: safeBuyerId.startsWith('tg_') ? safeBuyerId : (safeBuyerId === 'anonymous' ? 'anonymous' : `user_${safeBuyerId.slice(0,8)}`),
+          email: safeBuyerId.startsWith('tg_') 
+            ? `${safeBuyerId.replace('tg_','')}@bt4.studio` 
+            : (safeBuyerId === 'anonymous' ? 'anonymous@bt4.studio' : `${safeBuyerId}@bt4.studio`),
+          role: 'BUYER',
+          displayName: safeBuyerId.startsWith('tg_') ? `TG User ${safeBuyerId}` : 'Buyer',
+        },
+      });
+    } catch (userErr) {
+      console.warn('[data] could not upsert buyer stub, continuing:', userErr);
+    }
+
     const order = await prisma!.order.create({
       data: {
-        buyerId,
+        buyerId: safeBuyerId,
         productId: product.id,
         amount: amount,
         platformFee: amount * 0.2,
@@ -213,7 +236,7 @@ export async function createPendingOrder(productId: string, buyerId: string, amo
       sellerEarnings: Number(order.sellerEarnings),
     };
   } catch (error) {
-    console.warn('[data] createPendingOrder fallback');
+    console.warn('[data] createPendingOrder fallback (real DB error):', error);
     return mock.createPendingOrder(productId, buyerId, amount);
   }
 }

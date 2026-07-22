@@ -18,9 +18,9 @@ export default function MyPurchases() {
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
 
-  // In a real app we'd use session.user.id
-  // For demo we use the buyer from the Telegram flow + fallback to u4
-  const currentBuyerId = (session?.user as any)?.id || "demo-buyer";
+  // Use real Supabase user ID when logged in.
+  // Fallback to "anonymous" (bot will attach tg_{id} when user opens link)
+  const currentBuyerId = (session?.user as any)?.id || "anonymous";
 
   useEffect(() => {
     async function loadOrders() {
