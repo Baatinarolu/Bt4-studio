@@ -24,9 +24,20 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
 
   // Load real reviews
   const reviews = await getProductReviews(product.id);
-  // For demo, determine a current buyer id (would come from session)
-  const demoBuyerId = "u4"; // janebuyer from seed
-  const isVerifiedBuyer = await hasUserPurchasedProduct(demoBuyerId, product.id);
+
+  // Get real current user from Supabase (if logged in)
+  let currentBuyerId = "demo-buyer";
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) {
+      currentBuyerId = user.id;
+    }
+  } catch (e) {
+    // fallback to demo
+  }
+
+  const isVerifiedBuyer = await hasUserPurchasedProduct(currentBuyerId, product.id);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
@@ -34,7 +45,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
         product={product as any} 
         reviews={reviews as any} 
         isVerifiedBuyer={isVerifiedBuyer} 
-        currentBuyerId={demoBuyerId}
+        currentBuyerId={currentBuyerId}
       />
     </div>
   );

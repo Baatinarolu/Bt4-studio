@@ -25,6 +25,9 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
+    // Open popup immediately (prevents popup blocker)
+    const popup = window.open('', '_blank');
+
     setIsPurchasing(true);
 
     try {
@@ -34,45 +37,39 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
         body: JSON.stringify({
           productSlug: product.slug,
           price: product.price,
+          buyerId: currentBuyerId || undefined,
         }),
       });
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Purchase failed");
+      }
 
       const data = await res.json();
 
-      window.open(data.telegramUrl, "_blank");
+      if (!data.telegramUrl) {
+        throw new Error("No Telegram link returned from server");
+      }
 
-      toast.success("Purchase started in Telegram", {
-        description: "Complete payment in the bot to receive your license & download link.",
+      // Set the popup location to the Telegram link
+      if (popup) {
+        popup.location.href = data.telegramUrl;
+      } else {
+        // Fallback
+        window.location.href = data.telegramUrl;
+      }
+
+      toast.success("Redirecting to Telegram...", {
+        description: "Complete payment inside the BT4StudioBot chat.",
       });
 
-      setTimeout(async () => {
-        try {
-          await fetch("/api/complete-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ orderId: data.orderId }),
-          });
+      setIsPurchasing(false);
 
-          toast.success("Payment confirmed!", {
-            description: "Check your Telegram chat for the download link and license key.",
-            action: {
-              label: "Open Telegram",
-              onClick: () => {
-                const bot = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot';
-                window.open(`https://t.me/${bot}`, '_blank');
-              },
-            },
-          });
-        } catch (e) {
-          // silent fallback
-        }
-        setIsPurchasing(false);
-      }, 4000);
-
-    } catch (error) {
-      toast.error("Could not start purchase. Please try again.");
+    } catch (error: any) {
+      console.error("Purchase error:", error);
+      if (popup) popup.close();
+      toast.error(error.message || "Could not start purchase. Please log in first.");
       setIsPurchasing(false);
     }
   };
