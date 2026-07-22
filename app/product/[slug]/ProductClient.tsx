@@ -25,9 +25,9 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Must have a real authenticated user ID
-    if (!currentBuyerId || currentBuyerId === "demo-buyer" || currentBuyerId.startsWith("demo")) {
-      toast.error("Please sign in to purchase");
+    // Very strict guard — we must have a real Supabase user ID
+    if (!currentBuyerId || currentBuyerId === "demo-buyer" || currentBuyerId.startsWith("demo") || currentBuyerId === "anonymous") {
+      toast.error("You need to be logged in to purchase");
       window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
@@ -53,17 +53,15 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
       const data = await res.json();
 
       if (!data.telegramUrl) {
-        throw new Error("No Telegram link returned");
+        throw new Error("No Telegram link returned from server");
       }
 
-      // Direct redirect — most reliable way
+      // Direct navigation (works best on mobile + desktop)
       window.location.href = data.telegramUrl;
-
-      toast.success("Redirecting to Telegram...");
 
     } catch (error: any) {
       console.error("Purchase error:", error);
-      toast.error(error.message || "Could not start purchase");
+      toast.error(error.message || "Could not start purchase. Please try again.");
       setIsPurchasing(false);
     }
   };

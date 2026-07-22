@@ -243,8 +243,8 @@ function SignInContent() {
             </span>
             Continue with Telegram
           </Button>
-          <p className="text-[11px] text-center text-muted-foreground -mt-1">
-            Opens Telegram • no code/OTP sent
+          <p className="text-[10px] text-center text-muted-foreground -mt-1">
+            Telegram will open in a new tab • you will be logged in directly (no OTP code is sent)
           </p>
         </div>
 
