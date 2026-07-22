@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getProductBySlug, getProductReviews, createReview, hasUserPurchasedProduct } from "@/lib/data";
+import { createClient } from "@/lib/supabase/server";
 import { Star, Download, Shield, Tag } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { toast } from "sonner";

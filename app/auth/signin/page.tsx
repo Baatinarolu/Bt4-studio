@@ -243,6 +243,9 @@ function SignInContent() {
             </span>
             Continue with Telegram
           </Button>
+          <p className="text-[11px] text-center text-muted-foreground -mt-1">
+            Opens Telegram • no code/OTP sent
+          </p>
         </div>
 
         {/* Divider */}
