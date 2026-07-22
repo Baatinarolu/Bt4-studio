@@ -37,7 +37,9 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
           productSlug: product.slug,
           price: product.price,
           // Only pass real ID if we actually have a proper logged-in user
-          buyerId: currentBuyerId && !currentBuyerId.startsWith("demo") && currentBuyerId !== "anonymous" 
+          // Pass real Supabase UUID if available; otherwise let server use "anonymous"
+          // (bot will attach real tg_{id} when user starts chat)
+          buyerId: currentBuyerId && currentBuyerId !== "anonymous" && !currentBuyerId.startsWith("demo") 
             ? currentBuyerId 
             : undefined,
         }),
