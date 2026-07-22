@@ -25,12 +25,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Allow purchase even for anonymous users (they will complete in Telegram)
-    // Only redirect to login for a better experience if they want account features
-    const effectiveBuyerId = currentBuyerId && !currentBuyerId.startsWith("demo") && currentBuyerId !== "anonymous" 
-      ? currentBuyerId 
-      : undefined;
-
+    // Always allow purchase. Anonymous is fine — the bot will link the real tg user.
     setIsPurchasing(true);
 
     try {
@@ -40,25 +35,33 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
         body: JSON.stringify({
           productSlug: product.slug,
           price: product.price,
-          buyerId: effectiveBuyerId,
+          // Only send real ID if we have one
+          buyerId: currentBuyerId && !currentBuyerId.startsWith("demo") && currentBuyerId !== "anonymous" 
+            ? currentBuyerId 
+            : undefined,
         }),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Purchase failed");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.telegramUrl) {
+        throw new Error(data.error || "Could not generate purchase link");
       }
 
-      const data = await res.json();
-
-      if (!data.telegramUrl) {
-        throw new Error("No Telegram link returned");
-      }
-
-      // Direct redirect to Telegram (most reliable)
+      // Direct redirect (best on mobile)
       window.location.href = data.telegramUrl;
 
-      toast.success("Opening Telegram bot...");
+      // Show a visible fallback in case navigation is blocked
+      setTimeout(() => {
+        toast("If Telegram didn't open automatically", {
+          description: "Tap to open manually",
+          action: {
+            label: "Open in Telegram",
+            onClick: () => window.open(data.telegramUrl, "_blank"),
+          },
+          duration: 8000,
+        });
+      }, 900);
 
     } catch (error: any) {
       console.error("Purchase error:", error);
