@@ -25,15 +25,12 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Strong guard: require real logged-in user
+    // Must have a real authenticated user ID
     if (!currentBuyerId || currentBuyerId === "demo-buyer" || currentBuyerId.startsWith("demo")) {
-      toast.error("You must be logged in to purchase");
+      toast.error("Please sign in to purchase");
       window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
       return;
     }
-
-    // Open a blank popup right away (avoids popup blockers)
-    const popup = window.open('', '_blank');
 
     setIsPurchasing(true);
 
@@ -50,32 +47,23 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Failed to create purchase");
+        throw new Error(err.error || "Purchase failed");
       }
 
       const data = await res.json();
 
       if (!data.telegramUrl) {
-        throw new Error("Server did not return a valid Telegram link");
+        throw new Error("No Telegram link returned");
       }
 
-      // Navigate the popup to Telegram
-      if (popup && !popup.closed) {
-        popup.location.href = data.telegramUrl;
-      } else {
-        window.location.href = data.telegramUrl;
-      }
+      // Direct redirect — most reliable way
+      window.location.href = data.telegramUrl;
 
-      toast.success("Opened Telegram", {
-        description: "Finish checkout inside @BT4StudioBot",
-      });
-
-      setIsPurchasing(false);
+      toast.success("Redirecting to Telegram...");
 
     } catch (error: any) {
       console.error("Purchase error:", error);
-      if (popup) popup.close();
-      toast.error(error.message || "Could not start purchase. Please log in.");
+      toast.error(error.message || "Could not start purchase");
       setIsPurchasing(false);
     }
   };
