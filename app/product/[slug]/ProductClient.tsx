@@ -25,7 +25,8 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Always allow purchase. Anonymous is fine — the bot will link the real tg user.
+    // Always allow purchase.
+    // Anonymous users will be linked by the bot when they open the link.
     setIsPurchasing(true);
 
     try {
@@ -35,7 +36,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
         body: JSON.stringify({
           productSlug: product.slug,
           price: product.price,
-          // Only send real ID if we have one
+          // Only pass real ID if we actually have a proper logged-in user
           buyerId: currentBuyerId && !currentBuyerId.startsWith("demo") && currentBuyerId !== "anonymous" 
             ? currentBuyerId 
             : undefined,
@@ -45,23 +46,23 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data.telegramUrl) {
-        throw new Error(data.error || "Could not generate purchase link");
+        throw new Error(data.error || "Failed to create purchase link");
       }
 
-      // Direct redirect (best on mobile)
+      // Direct navigation (most reliable)
       window.location.href = data.telegramUrl;
 
-      // Show a visible fallback in case navigation is blocked
+      // Strong visible fallback
       setTimeout(() => {
-        toast("If Telegram didn't open automatically", {
-          description: "Tap to open manually",
+        toast("Telegram link ready", {
+          description: "If it didn't open, tap here",
           action: {
             label: "Open in Telegram",
             onClick: () => window.open(data.telegramUrl, "_blank"),
           },
-          duration: 8000,
+          duration: 15000,
         });
-      }, 900);
+      }, 800);
 
     } catch (error: any) {
       console.error("Purchase error:", error);
