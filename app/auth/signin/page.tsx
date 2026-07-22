@@ -28,7 +28,7 @@ function SignInContent() {
     // CRITICAL: Telegram OAuth "domain invalid" error happens when origin
     // does not exactly match a domain you whitelisted in @BotFather → Bot Settings → Login Widget → Domain
     // We force the production domain here.
-    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio.vercel.app';
+    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio-pro.vercel.app';
     const returnTo = `${origin}/auth/signin`;
 
     const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botId)}&origin=${encodeURIComponent(origin)}&return_to=${encodeURIComponent(returnTo)}`;

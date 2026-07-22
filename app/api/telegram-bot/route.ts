@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
             ],
             [
               { text: "❓ Ask seller", url: `https://t.me/${process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot'}?start=ask_${product.seller_id}` },
-              { text: "🔙 Back to BT4 Studio", url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio.vercel.app'}/product/${product.slug}` }
+              { text: "🔙 Back to BT4 Studio", url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio-pro.vercel.app'}/product/${product.slug}` }
             ]
           ]
         };
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
         `Use /purchases to see your downloads.`,
         {
           inline_keyboard: [[
-            { text: "🌐 Open Marketplace", url: "https://bt4-studio.vercel.app/marketplace" }
+            { text: "🌐 Open Marketplace", url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio-pro.vercel.app'}/marketplace` }
           ]]
         }
       );
