@@ -100,7 +100,8 @@ export async function POST(req: NextRequest) {
     // Already existed — return the session
     userId = signInData.user.id;
 
-    // Update profile if needed
+    // Update profile if needed + FORCE ADMIN for baatinarolu@gmail.com
+    const isAdminEmail = email === 'baatinarolu@gmail.com';
     await supabaseAdmin.from('users').upsert({
       id: userId,
       email,
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
       display_name: displayName,
       avatar: avatar,
       telegram_id: telegramId.toString(),
-      role: 'BUYER', // default, can be changed later
+      role: isAdminEmail ? 'ADMIN' : 'BUYER',
     }, { onConflict: 'id' });
 
     return NextResponse.json({

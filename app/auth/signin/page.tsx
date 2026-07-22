@@ -23,9 +23,10 @@ function SignInContent() {
 
   const handleTelegramSignIn = () => {
     // MUST use the NUMERIC bot ID (8862600842), not the username.
-    // This is the root cause of "bot id required" errors.
     const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || '8862600842';
-    const origin = window.location.origin;
+
+    // Use a stable origin (Vercel production domain preferred for OAuth)
+    const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const returnTo = `${origin}/auth/signin`;
 
     // Official Telegram OAuth using numeric bot_id
@@ -73,8 +74,9 @@ function SignInContent() {
             });
           }
 
-          // Ensure profile row
+          // Ensure profile row + FORCE baatinarolu@gmail.com to ADMIN
           if (result.user) {
+            const isAdmin = result.user.email === 'baatinarolu@gmail.com';
             await supabase.from('users').upsert({
               id: result.user.id,
               email: result.user.email,
@@ -82,7 +84,7 @@ function SignInContent() {
               display_name: result.user.display_name,
               avatar: result.user.avatar,
               telegram_id: result.user.telegram_id?.toString(),
-              role: 'BUYER',
+              role: isAdmin ? 'ADMIN' : 'BUYER',
             }, { onConflict: 'id' });
           }
 

@@ -16,7 +16,10 @@ export async function POST(req: NextRequest) {
     // Create a pending order right away (linked to the token for demo)
     const order = await createPendingOrder((product as any).id, buyerId, finalPrice);
 
-    const telegramUrl = `https://t.me/BT4StudioBot?start=purchase_${token}`;
+    const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot';
+    const telegramUrl = `https://t.me/${botUsername}?start=purchase_${token}`;
+
+    console.log('[PURCHASE] Redirecting to Telegram bot:', botUsername);
 
     return NextResponse.json({
       success: true,

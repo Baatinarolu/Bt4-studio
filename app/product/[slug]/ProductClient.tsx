@@ -59,7 +59,10 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
             description: "Check your Telegram chat for the download link and license key.",
             action: {
               label: "Open Telegram",
-              onClick: () => window.open("https://t.me/BT4StudioBot", "_blank"),
+              onClick: () => {
+                const bot = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'BT4StudioBot';
+                window.open(`https://t.me/${bot}`, '_blank');
+              },
             },
           });
         } catch (e) {
