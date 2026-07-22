@@ -27,7 +27,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
   const reviews = await getProductReviews(product.id);
 
   // Get real current user from Supabase (if logged in)
-  let currentBuyerId = "demo-buyer";
+  let currentBuyerId = "anonymous";
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -35,7 +35,7 @@ export default async function ProductDetail({ params }: { params: Promise<{ slug
       currentBuyerId = user.id;
     }
   } catch (e) {
-    // fallback to demo
+    // will stay "anonymous"
   }
 
   const isVerifiedBuyer = await hasUserPurchasedProduct(currentBuyerId, product.id);
