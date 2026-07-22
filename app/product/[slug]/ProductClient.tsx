@@ -25,7 +25,14 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Open popup immediately (prevents popup blocker)
+    // Strong guard: require real logged-in user
+    if (!currentBuyerId || currentBuyerId === "demo-buyer" || currentBuyerId.startsWith("demo")) {
+      toast.error("You must be logged in to purchase");
+      window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
+      return;
+    }
+
+    // Open a blank popup right away (avoids popup blockers)
     const popup = window.open('', '_blank');
 
     setIsPurchasing(true);
@@ -37,31 +44,30 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
         body: JSON.stringify({
           productSlug: product.slug,
           price: product.price,
-          buyerId: currentBuyerId || undefined,
+          buyerId: currentBuyerId,
         }),
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Purchase failed");
+        throw new Error(err.error || "Failed to create purchase");
       }
 
       const data = await res.json();
 
       if (!data.telegramUrl) {
-        throw new Error("No Telegram link returned from server");
+        throw new Error("Server did not return a valid Telegram link");
       }
 
-      // Set the popup location to the Telegram link
-      if (popup) {
+      // Navigate the popup to Telegram
+      if (popup && !popup.closed) {
         popup.location.href = data.telegramUrl;
       } else {
-        // Fallback
         window.location.href = data.telegramUrl;
       }
 
-      toast.success("Redirecting to Telegram...", {
-        description: "Complete payment inside the BT4StudioBot chat.",
+      toast.success("Opened Telegram", {
+        description: "Finish checkout inside @BT4StudioBot",
       });
 
       setIsPurchasing(false);
@@ -69,7 +75,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
     } catch (error: any) {
       console.error("Purchase error:", error);
       if (popup) popup.close();
-      toast.error(error.message || "Could not start purchase. Please log in first.");
+      toast.error(error.message || "Could not start purchase. Please log in.");
       setIsPurchasing(false);
     }
   };
