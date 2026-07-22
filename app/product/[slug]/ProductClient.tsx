@@ -25,12 +25,11 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
   const [localReviews, setLocalReviews] = useState(reviews || []);
 
   const handleBuyViaTelegram = async () => {
-    // Very strict guard — we must have a real Supabase user ID
-    if (!currentBuyerId || currentBuyerId === "demo-buyer" || currentBuyerId.startsWith("demo") || currentBuyerId === "anonymous") {
-      toast.error("You need to be logged in to purchase");
-      window.location.href = `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
-      return;
-    }
+    // Allow purchase even for anonymous users (they will complete in Telegram)
+    // Only redirect to login for a better experience if they want account features
+    const effectiveBuyerId = currentBuyerId && !currentBuyerId.startsWith("demo") && currentBuyerId !== "anonymous" 
+      ? currentBuyerId 
+      : undefined;
 
     setIsPurchasing(true);
 
@@ -41,7 +40,7 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
         body: JSON.stringify({
           productSlug: product.slug,
           price: product.price,
-          buyerId: currentBuyerId,
+          buyerId: effectiveBuyerId,
         }),
       });
 
@@ -53,15 +52,17 @@ export default function ProductClient({ product, reviews, isVerifiedBuyer, curre
       const data = await res.json();
 
       if (!data.telegramUrl) {
-        throw new Error("No Telegram link returned from server");
+        throw new Error("No Telegram link returned");
       }
 
-      // Direct navigation (works best on mobile + desktop)
+      // Direct redirect to Telegram (most reliable)
       window.location.href = data.telegramUrl;
+
+      toast.success("Opening Telegram bot...");
 
     } catch (error: any) {
       console.error("Purchase error:", error);
-      toast.error(error.message || "Could not start purchase. Please try again.");
+      toast.error(error.message || "Could not start purchase");
       setIsPurchasing(false);
     }
   };
