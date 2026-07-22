@@ -25,11 +25,12 @@ function SignInContent() {
     // MUST use the NUMERIC bot ID (8862600842), not the username.
     const botId = process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID || '8862600842';
 
-    // Use a stable origin (Vercel production domain preferred for OAuth)
-    const origin = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    // CRITICAL: Telegram OAuth "domain invalid" error happens when origin
+    // does not exactly match a domain you whitelisted in @BotFather → Bot Settings → Login Widget → Domain
+    // We force the production domain here.
+    const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://bt4-studio.vercel.app';
     const returnTo = `${origin}/auth/signin`;
 
-    // Official Telegram OAuth using numeric bot_id
     const url = `https://oauth.telegram.org/auth?bot_id=${encodeURIComponent(botId)}&origin=${encodeURIComponent(origin)}&return_to=${encodeURIComponent(returnTo)}`;
     window.location.href = url;
   };
